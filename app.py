@@ -8,7 +8,7 @@ import requests
 import streamlit as st
 
 # ============================================================
-# PDF
+# OPTIONAL PDF
 # ============================================================
 
 try:
@@ -32,7 +32,7 @@ except ImportError:
 
 
 # ============================================================
-# CẤU HÌNH STREAMLIT
+# PAGE CONFIG
 # ============================================================
 
 st.set_page_config(
@@ -44,136 +44,35 @@ st.set_page_config(
 
 
 # ============================================================
-# CSS
-# ============================================================
-
-st.markdown(
-    """
-    <style>
-
-    .stApp {
-        background-color: #fffaf7;
-    }
-
-    .main-title {
-        color: #a31313;
-        font-size: 44px;
-        font-weight: 800;
-        text-align: center;
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-
-    .sub-title {
-        color: #666;
-        text-align: center;
-        font-size: 17px;
-        margin-bottom: 25px;
-    }
-
-    .section-title {
-        color: #a31313;
-        font-size: 25px;
-        font-weight: 700;
-        margin-top: 15px;
-        margin-bottom: 15px;
-    }
-
-    .total-box {
-        background: linear-gradient(
-            135deg,
-            #a31313,
-            #d32f2f
-        );
-        color: white;
-        padding: 20px;
-        border-radius: 15px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-    }
-
-    .total-label {
-        font-size: 16px;
-    }
-
-    .total-number {
-        font-size: 32px;
-        font-weight: 800;
-    }
-
-    .info-card {
-        background: white;
-        border-radius: 12px;
-        padding: 16px;
-        border: 1px solid #eeeeee;
-        margin-bottom: 10px;
-    }
-
-    .chat-user {
-        background: #e9f5ff;
-        padding: 12px;
-        border-radius: 12px;
-        margin: 8px 0;
-    }
-
-    .chat-bot {
-        background: white;
-        border: 1px solid #eeeeee;
-        padding: 12px;
-        border-radius: 12px;
-        margin: 8px 0;
-    }
-
-    .restaurant-image {
-        border-radius: 18px;
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-
-# ============================================================
-# THÔNG TIN N2 SUSHI
+# DATA
 # ============================================================
 
 RESTAURANT = {
     "name": "N2 Sushi",
+    "tagline": "Japanese Cuisine • Premium Sushi",
     "phone": "0900 000 000",
     "address": "Địa chỉ N2 Sushi - cập nhật địa chỉ thật tại đây",
     "opening_hours": "10:00 - 22:00 hàng ngày",
 }
 
 
-# ============================================================
-# MENU
-# ============================================================
-
 MENU = [
-
-    # ----------------------------
-    # MÓN ĂN
-    # ----------------------------
-
     {
         "code": "S01",
         "name": "Sushi cá hồi",
         "category": "Món ăn",
         "price": 69000,
         "bestseller": True,
-        "description": "Sushi cá hồi tươi",
+        "description": "Cá hồi tươi, cơm sushi Nhật",
     },
-
     {
         "code": "S02",
         "name": "Sushi cá ngừ",
         "category": "Món ăn",
         "price": 65000,
         "bestseller": True,
-        "description": "Sushi cá ngừ",
+        "description": "Cá ngừ tươi cùng cơm sushi",
     },
-
     {
         "code": "S03",
         "name": "Sashimi cá hồi",
@@ -182,43 +81,38 @@ MENU = [
         "bestseller": True,
         "description": "Sashimi cá hồi tươi",
     },
-
     {
         "code": "S04",
         "name": "Sashimi tổng hợp",
         "category": "Món ăn",
         "price": 229000,
         "bestseller": True,
-        "description": "Sashimi tổng hợp",
+        "description": "Tổng hợp nhiều loại sashimi",
     },
-
     {
         "code": "S05",
         "name": "Maki cá hồi bơ",
         "category": "Món ăn",
         "price": 89000,
         "bestseller": True,
-        "description": "Maki cá hồi và bơ",
+        "description": "Cá hồi, bơ và rong biển",
     },
-
     {
         "code": "S06",
         "name": "Maki tempura tôm",
         "category": "Món ăn",
         "price": 99000,
         "bestseller": False,
-        "description": "Maki tôm tempura",
+        "description": "Tôm tempura cuộn maki",
     },
-
     {
         "code": "S07",
         "name": "Salmon Aburi",
         "category": "Món ăn",
         "price": 109000,
         "bestseller": True,
-        "description": "Cá hồi áp lửa",
+        "description": "Cá hồi áp lửa kiểu Nhật",
     },
-
     {
         "code": "S08",
         "name": "Unagi Sushi",
@@ -227,7 +121,6 @@ MENU = [
         "bestseller": False,
         "description": "Sushi lươn Nhật",
     },
-
     {
         "code": "S09",
         "name": "Gyoza",
@@ -236,7 +129,6 @@ MENU = [
         "bestseller": False,
         "description": "Bánh xếp Nhật",
     },
-
     {
         "code": "S10",
         "name": "Edamame",
@@ -246,42 +138,30 @@ MENU = [
         "description": "Đậu nành Nhật",
     },
 
-
-    # ----------------------------
-    # COMBO
-    # ----------------------------
-
     {
         "code": "C02",
-        "name": "Combo N2 Couple - 2 người",
+        "name": "Combo N2 Couple",
         "category": "Combo",
         "price": 299000,
         "bestseller": True,
         "description": "Combo dành cho 2 người",
     },
-
     {
         "code": "C03",
-        "name": "Combo N2 Family - 3 người",
+        "name": "Combo N2 Family",
         "category": "Combo",
         "price": 429000,
         "bestseller": True,
         "description": "Combo dành cho 3 người",
     },
-
     {
         "code": "C45",
-        "name": "Combo N2 Party - 4-5 người",
+        "name": "Combo N2 Party",
         "category": "Combo",
         "price": 649000,
         "bestseller": True,
         "description": "Combo dành cho 4-5 người",
     },
-
-
-    # ----------------------------
-    # NƯỚC
-    # ----------------------------
 
     {
         "code": "D01",
@@ -291,7 +171,6 @@ MENU = [
         "bestseller": False,
         "description": "Nước ngọt",
     },
-
     {
         "code": "D02",
         "name": "Sprite",
@@ -300,16 +179,14 @@ MENU = [
         "bestseller": False,
         "description": "Nước ngọt",
     },
-
     {
         "code": "D03",
         "name": "Trà đào",
         "category": "Nước uống",
         "price": 45000,
         "bestseller": True,
-        "description": "Trà đào",
+        "description": "Trà đào mát lạnh",
     },
-
     {
         "code": "D04",
         "name": "Trà xanh Nhật",
@@ -321,20 +198,7 @@ MENU = [
 ]
 
 
-MENU_DF = pd.DataFrame(MENU)
-
-MENU_LOOKUP = {
-    item["name"]: item
-    for item in MENU
-}
-
-
-# ============================================================
-# VOUCHER
-# ============================================================
-
 VOUCHERS = {
-
     "N2WELCOME": {
         "type": "percent",
         "value": 10,
@@ -342,7 +206,6 @@ VOUCHERS = {
         "min_order": 200000,
         "description": "Giảm 10%, tối đa 100.000đ cho đơn từ 200.000đ",
     },
-
     "N2SAVE50": {
         "type": "fixed",
         "value": 50000,
@@ -350,7 +213,6 @@ VOUCHERS = {
         "min_order": 300000,
         "description": "Giảm 50.000đ cho đơn từ 300.000đ",
     },
-
     "N2VIP": {
         "type": "percent",
         "value": 15,
@@ -361,97 +223,66 @@ VOUCHERS = {
 }
 
 
-# ============================================================
-# KHUYẾN MÃI
-# ============================================================
-
 PROMOTIONS = [
     "Combo N2 Couple dành cho 2 người.",
     "Combo N2 Family dành cho 3 người.",
     "Combo N2 Party dành cho 4-5 người.",
-    "Khách có thể nhập voucher trực tiếp tại màn hình thanh toán.",
+    "Nhập voucher để nhận ưu đãi khi thanh toán.",
 ]
 
 
+MENU_LOOKUP = {
+    item["name"]: item
+    for item in MENU
+}
+
+
 # ============================================================
-# HÀM TIỆN ÍCH
+# HELPER
 # ============================================================
 
-def format_currency(value):
-
-    return (
-        f"{float(value):,.0f} ₫"
-        .replace(",", ".")
-    )
+def money(value):
+    return f"{float(value):,.0f} ₫".replace(",", ".")
 
 
-def calculate_voucher(
-    subtotal,
-    voucher_code,
-):
+def calculate_voucher(subtotal, code):
 
-    voucher_code = (
-        str(voucher_code or "")
-        .strip()
-        .upper()
-    )
+    code = str(code or "").strip().upper()
 
-    if not voucher_code:
-        return 0, "Không sử dụng voucher"
+    if not code:
+        return 0, ""
 
-    if voucher_code not in VOUCHERS:
-        return (
-            0,
-            f"Voucher {voucher_code} không tồn tại.",
-        )
+    if code not in VOUCHERS:
+        return 0, f"Voucher {code} không tồn tại."
 
-    voucher = VOUCHERS[voucher_code]
+    voucher = VOUCHERS[code]
 
     if subtotal < voucher["min_order"]:
-
         return (
             0,
-            f"Đơn hàng phải từ "
-            f"{format_currency(voucher['min_order'])}.",
+            f"Đơn tối thiểu {money(voucher['min_order'])} "
+            f"để sử dụng voucher này.",
         )
 
     if voucher["type"] == "percent":
-
-        discount = (
-            subtotal
-            * voucher["value"]
-            / 100
-        )
-
+        discount = subtotal * voucher["value"] / 100
     else:
-
         discount = voucher["value"]
 
-    discount = min(
-        discount,
-        voucher["max_discount"],
-    )
-
-    discount = min(
-        discount,
-        subtotal,
-    )
+    discount = min(discount, voucher["max_discount"])
+    discount = min(discount, subtotal)
 
     return (
         discount,
-        f"Đã áp dụng voucher {voucher_code}: "
-        f"-{format_currency(discount)}",
+        f"Đã áp dụng {code}: giảm {money(discount)}",
     )
 
 
-def calculate_points(total):
-
-    # 10.000đ = 1 điểm
+def loyalty_points(total):
     return int(total // 10000)
 
 
-def generate_invoice_number():
-
+def invoice_number():
     return (
         "N2-"
         + datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -461,33 +292,248 @@ def generate_invoice_number():
 
 
 # ============================================================
-# TẠO PDF
+# AI CHATBOT
 # ============================================================
 
-def find_font():
+def get_api_key():
 
-    paths = [
+    try:
+        key = st.secrets.get("OPENROUTER_API_KEY", "")
+        if key:
+            return key
+    except Exception:
+        pass
 
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    return os.getenv("OPENROUTER_API_KEY", "")
 
-        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
 
-        "C:/Windows/Fonts/arial.ttf",
+def get_model():
 
-        "C:/Windows/Fonts/Arial.ttf",
+    try:
+        model = st.secrets.get(
+            "OPENROUTER_MODEL",
+            "openai/gpt-4o-mini",
+        )
+        if model:
+            return model
+    except Exception:
+        pass
 
-        "/Library/Fonts/Arial.ttf",
+    return os.getenv(
+        "OPENROUTER_MODEL",
+        "openai/gpt-4o-mini",
+    )
+
+
+def local_bot(question):
+
+    q = question.lower()
+
+    if "best seller" in q or "bán chạy" in q:
+
+        items = [
+            x for x in MENU
+            if x["bestseller"]
+        ]
+
+        text = "🍣 **Best seller của N2 Sushi:**\n\n"
+
+        for item in items:
+            text += (
+                f"- {item['name']} — "
+                f"{money(item['price'])}\n"
+            )
+
+        return text
+
+    if "2 người" in q:
+
+        return (
+            "👫 **Combo cho 2 người**\n\n"
+            "**Combo N2 Couple** — 299.000đ"
+        )
+
+    if "3 người" in q:
+
+        return (
+            "👨‍👩‍👧 **Combo cho 3 người**\n\n"
+            "**Combo N2 Family** — 429.000đ"
+        )
+
+    if (
+        "4-5" in q
+        or "4 5" in q
+        or "4 người" in q
+        or "5 người" in q
+    ):
+
+        return (
+            "👨‍👩‍👧‍👦 **Combo cho 4-5 người**\n\n"
+            "**Combo N2 Party** — 649.000đ"
+        )
+
+    if (
+        "khuyến mãi" in q
+        or "khuyen mai" in q
+        or "ưu đãi" in q
+        or "voucher" in q
+    ):
+
+        result = "🎁 **Khuyến mãi tại N2 Sushi:**\n\n"
+
+        for promo in PROMOTIONS:
+            result += f"- {promo}\n"
+
+        return result
+
+    if (
+        "địa chỉ" in q
+        or "dia chi" in q
+        or "ở đâu" in q
+        or "o dau" in q
+    ):
+
+        return (
+            "📍 **Địa chỉ N2 Sushi:**\n\n"
+            + RESTAURANT["address"]
+        )
+
+    if (
+        "giờ mở cửa" in q
+        or "gio mo cua" in q
+        or "mấy giờ mở" in q
+    ):
+
+        return (
+            "🕐 **N2 Sushi mở cửa:**\n\n"
+            + RESTAURANT["opening_hours"]
+        )
+
+    if (
+        "menu" in q
+        or "thực đơn" in q
+        or "thuc don" in q
+    ):
+
+        result = "🍣 **Menu N2 Sushi:**\n\n"
+
+        for item in MENU:
+            result += (
+                f"- {item['name']} — "
+                f"{money(item['price'])}\n"
+            )
+
+        return result
+
+    return (
+        "Xin chào 👋 Mình là trợ lý của N2 Sushi.\n\n"
+        "Bạn có thể hỏi:\n"
+        "- Best seller của quán là gì?\n"
+        "- Combo cho 2 người?\n"
+        "- Combo cho 3 người?\n"
+        "- Combo cho 4-5 người?\n"
+        "- Quán đang có khuyến mãi gì?\n"
+        "- Địa chỉ quán ở đâu?\n"
+        "- Giờ mở cửa?\n"
+        "- Menu có món gì?"
+    )
+
+
+def ai_bot(question, history):
+
+    api_key = get_api_key()
+
+    if not api_key:
+        return local_bot(question)
+
+    knowledge = f"""
+Bạn là trợ lý chính thức của N2 Sushi.
+
+Tên quán: {RESTAURANT['name']}
+Địa chỉ: {RESTAURANT['address']}
+Điện thoại: {RESTAURANT['phone']}
+Giờ mở cửa: {RESTAURANT['opening_hours']}
+
+MENU:
+{chr(10).join(
+    f"- {x['name']}: {money(x['price'])}"
+    for x in MENU
+)}
+
+BEST SELLER:
+{chr(10).join(
+    f"- {x['name']}"
+    for x in MENU
+    if x['bestseller']
+)}
+
+COMBO:
+- Combo N2 Couple: 299.000đ - 2 người
+- Combo N2 Family: 429.000đ - 3 người
+- Combo N2 Party: 649.000đ - 4-5 người
+
+KHUYẾN MÃI:
+{chr(10).join(PROMOTIONS)}
+
+VOUCHER:
+{chr(10).join(VOUCHERS.keys())}
+
+Chỉ dùng dữ liệu trên.
+Không tự bịa thông tin.
+Nếu không biết, nói rằng thông tin chưa được cập nhật.
+Trả lời bằng tiếng Việt, thân thiện và ngắn gọn.
+"""
+
+    messages = [
+        {
+            "role": "system",
+            "content": knowledge,
+        }
     ]
 
-    for path in paths:
+    messages.extend(history[-8:])
 
-        if os.path.exists(path):
-            return path
+    messages.append(
+        {
+            "role": "user",
+            "content": question,
+        }
+    )
 
-    return None
+    try:
+
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "X-Title": "N2 Sushi POS",
+            },
+            json={
+                "model": get_model(),
+                "messages": messages,
+                "temperature": 0.2,
+                "max_tokens": 600,
+            },
+            timeout=40,
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return data["choices"][0]["message"]["content"]
+
+    except Exception:
+
+        return local_bot(question)
 
 
-def create_invoice_pdf(invoice):
+# ============================================================
+# PDF
+# ============================================================
+
+def create_pdf(invoice):
 
     if not REPORTLAB_AVAILABLE:
         return None
@@ -505,137 +551,92 @@ def create_invoice_pdf(invoice):
 
     styles = getSampleStyleSheet()
 
-    font_path = find_font()
-
-    if font_path:
-
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
-
-        try:
-
-            pdfmetrics.registerFont(
-                TTFont(
-                    "N2Font",
-                    font_path,
-                )
-            )
-
-            font = "N2Font"
-
-        except Exception:
-
-            font = "Helvetica"
-
-    else:
-
-        font = "Helvetica"
-
-    title_style = ParagraphStyle(
-        "N2Title",
+    title = ParagraphStyle(
+        "TitleN2",
         parent=styles["Title"],
-        fontName=font,
-        fontSize=21,
-        leading=25,
         alignment=TA_CENTER,
+        fontSize=22,
         textColor=colors.HexColor("#a31313"),
     )
 
-    normal_style = ParagraphStyle(
-        "N2Normal",
+    normal = ParagraphStyle(
+        "NormalN2",
         parent=styles["Normal"],
-        fontName=font,
         fontSize=9,
         leading=13,
     )
 
-    right_style = ParagraphStyle(
-        "N2Right",
-        parent=normal_style,
+    right = ParagraphStyle(
+        "RightN2",
+        parent=normal,
         alignment=TA_RIGHT,
     )
 
-    elements = []
+    story = []
 
-    elements.append(
+    story.append(
         Paragraph(
             "N2 SUSHI",
-            title_style,
+            title,
         )
     )
 
-    elements.append(
+    story.append(
         Paragraph(
             f"{RESTAURANT['address']}<br/>"
             f"Điện thoại: {RESTAURANT['phone']}<br/>"
-            f"Giờ mở cửa: {RESTAURANT['opening_hours']}",
-            normal_style,
+            f"{RESTAURANT['opening_hours']}",
+            normal,
         )
     )
 
-    elements.append(
-        Spacer(
-            1,
-            5 * mm,
-        )
+    story.append(
+        Spacer(1, 8 * mm)
     )
 
-    elements.append(
+    story.append(
         Paragraph(
             f"<b>HÓA ĐƠN THANH TOÁN</b><br/>"
-            f"Mã hóa đơn: {invoice['invoice_number']}<br/>"
+            f"Mã hóa đơn: {invoice['number']}<br/>"
             f"Thời gian: "
-            f"{invoice['created_at'].strftime('%d/%m/%Y %H:%M:%S')}<br/>"
-            f"Bàn: {invoice['table_number']}<br/>"
-            f"Khách hàng: {invoice['customer_name']}<br/>"
+            f"{invoice['time'].strftime('%d/%m/%Y %H:%M:%S')}<br/>"
+            f"Bàn: {invoice['table']}<br/>"
+            f"Khách hàng: {invoice['customer']}<br/>"
             f"SĐT: {invoice['phone'] or '---'}",
-            normal_style,
+            normal,
         )
     )
 
-    elements.append(
-        Spacer(
-            1,
-            5 * mm,
-        )
+    story.append(
+        Spacer(1, 5 * mm)
     )
 
     data = [
         [
-            Paragraph("<b>Món</b>", normal_style),
-            Paragraph("<b>SL</b>", normal_style),
-            Paragraph("<b>Đơn giá</b>", normal_style),
-            Paragraph("<b>Thành tiền</b>", normal_style),
+            Paragraph("<b>Món</b>", normal),
+            Paragraph("<b>SL</b>", normal),
+            Paragraph("<b>Đơn giá</b>", normal),
+            Paragraph("<b>Thành tiền</b>", normal),
         ]
     ]
 
     for item in invoice["items"]:
 
-        note = item["note"]
+        name = item["name"]
 
-        item_name = item["name"]
-
-        if note:
-
-            item_name += (
+        if item["note"]:
+            name += (
                 f"<br/><font size='7'>"
-                f"Note: {note}"
+                f"Ghi chú: {item['note']}"
                 f"</font>"
             )
 
         data.append(
             [
-                Paragraph(
-                    item_name,
-                    normal_style,
-                ),
+                Paragraph(name, normal),
                 str(item["quantity"]),
-                format_currency(
-                    item["price"]
-                ),
-                format_currency(
-                    item["line_total"]
-                ),
+                money(item["price"]),
+                money(item["line_total"]),
             ]
         )
 
@@ -658,28 +659,12 @@ def create_invoice_pdf(invoice):
                     (-1, 0),
                     colors.HexColor("#a31313"),
                 ),
-
                 (
                     "TEXTCOLOR",
                     (0, 0),
                     (-1, 0),
                     colors.white,
                 ),
-
-                (
-                    "FONTNAME",
-                    (0, 0),
-                    (-1, -1),
-                    font,
-                ),
-
-                (
-                    "FONTSIZE",
-                    (0, 0),
-                    (-1, -1),
-                    8,
-                ),
-
                 (
                     "GRID",
                     (0, 0),
@@ -687,38 +672,33 @@ def create_invoice_pdf(invoice):
                     0.3,
                     colors.grey,
                 ),
-
                 (
                     "VALIGN",
                     (0, 0),
                     (-1, -1),
                     "TOP",
                 ),
-
                 (
                     "ALIGN",
                     (1, 1),
                     (-1, -1),
                     "RIGHT",
                 ),
-
                 (
                     "ROWBACKGROUNDS",
                     (0, 1),
                     (-1, -1),
                     [
                         colors.white,
-                        colors.HexColor("#fff7f4"),
+                        colors.HexColor("#fff6f2"),
                     ],
                 ),
-
                 (
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
                     5,
                 ),
-
                 (
                     "BOTTOMPADDING",
                     (0, 0),
@@ -729,72 +709,28 @@ def create_invoice_pdf(invoice):
         )
     )
 
-    elements.append(table)
+    story.append(table)
 
-    elements.append(
-        Spacer(
-            1,
-            5 * mm,
-        )
+    story.append(
+        Spacer(1, 5 * mm)
     )
 
     summary = [
-
         [
-            Paragraph(
-                "Tạm tính",
-                normal_style,
-            ),
-
-            Paragraph(
-                format_currency(
-                    invoice["subtotal"]
-                ),
-                right_style,
-            ),
+            "Tạm tính",
+            money(invoice["subtotal"]),
         ],
-
         [
-            Paragraph(
-                "Giảm voucher",
-                normal_style,
-            ),
-
-            Paragraph(
-                "-"
-                + format_currency(
-                    invoice["discount"]
-                ),
-                right_style,
-            ),
+            "Giảm voucher",
+            "-" + money(invoice["discount"]),
         ],
-
         [
-            Paragraph(
-                "<b>TỔNG THANH TOÁN</b>",
-                normal_style,
-            ),
-
-            Paragraph(
-                "<b>"
-                + format_currency(
-                    invoice["total"]
-                )
-                + "</b>",
-                right_style,
-            ),
+            "TỔNG THANH TOÁN",
+            money(invoice["total"]),
         ],
-
         [
-            Paragraph(
-                "Điểm tích lũy",
-                normal_style,
-            ),
-
-            Paragraph(
-                str(invoice["points"]),
-                right_style,
-            ),
+            "Điểm tích lũy",
+            f"+{invoice['points']} điểm",
         ],
     ]
 
@@ -810,12 +746,23 @@ def create_invoice_pdf(invoice):
         TableStyle(
             [
                 (
+                    "ALIGN",
+                    (1, 0),
+                    (1, -1),
+                    "RIGHT",
+                ),
+                (
                     "FONTNAME",
                     (0, 0),
                     (-1, -1),
-                    font,
+                    "Helvetica",
                 ),
-
+                (
+                    "FONTSIZE",
+                    (0, 0),
+                    (-1, -1),
+                    10,
+                ),
                 (
                     "LINEABOVE",
                     (0, 2),
@@ -823,21 +770,12 @@ def create_invoice_pdf(invoice):
                     1,
                     colors.HexColor("#a31313"),
                 ),
-
-                (
-                    "FONTSIZE",
-                    (0, 0),
-                    (-1, -1),
-                    10,
-                ),
-
                 (
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
                     5,
                 ),
-
                 (
                     "BOTTOMPADDING",
                     (0, 0),
@@ -848,21 +786,18 @@ def create_invoice_pdf(invoice):
         )
     )
 
-    elements.append(summary_table)
+    story.append(summary_table)
 
-    elements.append(
-        Spacer(
-            1,
-            10 * mm,
-        )
+    story.append(
+        Spacer(1, 10 * mm)
     )
 
-    elements.append(
+    story.append(
         Paragraph(
-            "Cảm ơn quý khách đã đến N2 Sushi! ❤️",
+            "Cảm ơn quý khách đã đến N2 Sushi ❤️",
             ParagraphStyle(
                 "Thanks",
-                parent=normal_style,
+                parent=normal,
                 alignment=TA_CENTER,
                 fontSize=11,
                 textColor=colors.HexColor("#a31313"),
@@ -870,7 +805,7 @@ def create_invoice_pdf(invoice):
         )
     )
 
-    doc.build(elements)
+    doc.build(story)
 
     buffer.seek(0)
 
@@ -878,471 +813,380 @@ def create_invoice_pdf(invoice):
 
 
 # ============================================================
-# CHATBOT
+# SESSION
 # ============================================================
 
-def get_api_key():
+if "chat" not in st.session_state:
+    st.session_state.chat = []
 
-    try:
+if "invoice" not in st.session_state:
+    st.session_state.invoice = None
 
-        key = st.secrets.get(
-            "OPENROUTER_API_KEY",
-            "",
-        )
-
-        if key:
-            return key
-
-    except Exception:
-        pass
-
-    return os.getenv(
-        "OPENROUTER_API_KEY",
-        "",
-    )
-
-
-def get_model():
-
-    try:
-
-        model = st.secrets.get(
-            "OPENROUTER_MODEL",
-            "openai/gpt-4o-mini",
-        )
-
-        if model:
-            return model
-
-    except Exception:
-        pass
-
-    return os.getenv(
-        "OPENROUTER_MODEL",
-        "openai/gpt-4o-mini",
-    )
-
-
-def build_knowledge():
-
-    bestsellers = [
-        x
-        for x in MENU
-        if x["bestseller"]
-    ]
-
-    best_text = "\n".join(
-        [
-            f"- {x['name']}: "
-            f"{format_currency(x['price'])}"
-            for x in bestsellers
-        ]
-    )
-
-    combos = [
-        x
-        for x in MENU
-        if x["category"] == "Combo"
-    ]
-
-    combo_text = "\n".join(
-        [
-            f"- {x['name']}: "
-            f"{format_currency(x['price'])}"
-            for x in combos
-        ]
-    )
-
-    menu_text = "\n".join(
-        [
-            f"- {x['name']} "
-            f"({x['category']}): "
-            f"{format_currency(x['price'])}"
-            for x in MENU
-        ]
-    )
-
-    promo_text = "\n".join(
-        [
-            f"- {x}"
-            for x in PROMOTIONS
-        ]
-    )
-
-    return f"""
-N2 SUSHI
-
-Tên quán:
-{RESTAURANT['name']}
-
-Địa chỉ:
-{RESTAURANT['address']}
-
-Điện thoại:
-{RESTAURANT['phone']}
-
-Giờ mở cửa:
-{RESTAURANT['opening_hours']}
-
-BEST SELLER:
-{best_text}
-
-COMBO:
-{combo_text}
-
-KHUYẾN MÃI:
-{promo_text}
-
-MENU:
-{menu_text}
-
-VOUCHER:
-{list(VOUCHERS.keys())}
-"""
-
-
-def local_chatbot(message):
-
-    text = message.lower()
-
-    # ----------------------------
-    # BEST SELLER
-    # ----------------------------
-
-    if (
-        "best seller" in text
-        or "bán chạy" in text
-        or "bán chạy nhất" in text
-    ):
-
-        best = [
-            x
-            for x in MENU
-            if x["bestseller"]
-        ]
-
-        result = "🍣 **Best seller của N2 Sushi:**\n\n"
-
-        for x in best:
-
-            result += (
-                f"- **{x['name']}** — "
-                f"{format_currency(x['price'])}\n"
-            )
-
-        return result
-
-
-    # ----------------------------
-    # COMBO 2 NGƯỜI
-    # ----------------------------
-
-    if (
-        "2 người" in text
-        or "2 nguoi" in text
-    ):
-
-        return (
-            "👫 **Combo dành cho 2 người:**\n\n"
-            "- Combo N2 Couple - 2 người\n"
-            "  Giá: 299.000đ"
-        )
-
-
-    # ----------------------------
-    # COMBO 3 NGƯỜI
-    # ----------------------------
-
-    if (
-        "3 người" in text
-        or "3 nguoi" in text
-    ):
-
-        return (
-            "👨‍👩‍👧 **Combo dành cho 3 người:**\n\n"
-            "- Combo N2 Family - 3 người\n"
-            "  Giá: 429.000đ"
-        )
-
-
-    # ----------------------------
-    # COMBO 4-5 NGƯỜI
-    # ----------------------------
-
-    if (
-        "4-5" in text
-        or "4 5" in text
-        or "4 người" in text
-        or "5 người" in text
-    ):
-
-        return (
-            "👨‍👩‍👧‍👦 **Combo dành cho 4-5 người:**\n\n"
-            "- Combo N2 Party - 4-5 người\n"
-            "  Giá: 649.000đ"
-        )
-
-
-    # ----------------------------
-    # KHUYẾN MÃI
-    # ----------------------------
-
-    if (
-        "khuyến mãi" in text
-        or "khuyen mai" in text
-        or "ưu đãi" in text
-        or "voucher" in text
-    ):
-
-        result = (
-            "🎁 **Khuyến mãi của N2 Sushi:**\n\n"
-        )
-
-        for x in PROMOTIONS:
-
-            result += f"- {x}\n"
-
-        return result
-
-
-    # ----------------------------
-    # ĐỊA CHỈ
-    # ----------------------------
-
-    if (
-        "địa chỉ" in text
-        or "dia chi" in text
-        or "ở đâu" in text
-        or "o dau" in text
-    ):
-
-        return (
-            "📍 **Địa chỉ N2 Sushi:**\n\n"
-            + RESTAURANT["address"]
-        )
-
-
-    # ----------------------------
-    # GIỜ MỞ CỬA
-    # ----------------------------
-
-    if (
-        "giờ mở cửa" in text
-        or "gio mo cua" in text
-        or "mấy giờ mở" in text
-    ):
-
-        return (
-            "🕐 **Giờ mở cửa N2 Sushi:**\n\n"
-            + RESTAURANT["opening_hours"]
-        )
-
-
-    # ----------------------------
-    # MENU
-    # ----------------------------
-
-    if (
-        "menu" in text
-        or "thực đơn" in text
-        or "thuc don" in text
-    ):
-
-        result = (
-            "🍣 **Một số món của N2 Sushi:**\n\n"
-        )
-
-        for x in MENU:
-
-            result += (
-                f"- {x['name']} — "
-                f"{format_currency(x['price'])}\n"
-            )
-
-        return result
-
-
-    # ----------------------------
-    # MẶC ĐỊNH
-    # ----------------------------
-
-    return (
-        "Xin chào! 👋 Mình là trợ lý N2 Sushi.\n\n"
-        "Bạn có thể hỏi mình:\n"
-        "- 🍣 Best seller là gì?\n"
-        "- 👫 Combo cho 2 người?\n"
-        "- 👨‍👩‍👧 Combo cho 3 người?\n"
-        "- 👨‍👩‍👧‍👦 Combo cho 4-5 người?\n"
-        "- 🎁 N2 Sushi đang có khuyến mãi gì?\n"
-        "- 📍 Địa chỉ quán?\n"
-        "- 🕐 Giờ mở cửa?\n"
-        "- 🍱 Menu có món gì?"
-    )
-
-
-def ask_ai(
-    user_message,
-    chat_history,
-):
-
-    api_key = get_api_key()
-
-    if not api_key:
-
-        return local_chatbot(
-            user_message
-        )
-
-    system_prompt = f"""
-Bạn là chatbot chính thức của N2 Sushi.
-
-Trả lời bằng tiếng Việt.
-Thân thiện, ngắn gọn và chính xác.
-
-Chỉ sử dụng thông tin dưới đây:
-
-{build_knowledge()}
-
-QUY TẮC:
-
-1. Không được tự bịa thông tin.
-2. Không tự bịa giá.
-3. Không tự bịa địa chỉ.
-4. Không tự bịa chương trình khuyến mãi.
-5. Nếu không có thông tin, nói rằng thông tin chưa được cập nhật.
-6. Nếu khách hỏi best seller, sử dụng danh sách BEST SELLER.
-7. Nếu khách hỏi combo 2 người, 3 người hoặc 4-5 người,
-   giới thiệu đúng combo tương ứng.
-8. Không tiết lộ API key.
-"""
-
-    messages = [
-        {
-            "role": "system",
-            "content": system_prompt,
-        }
-    ]
-
-    messages.extend(
-        chat_history[-10:]
-    )
-
-    messages.append(
-        {
-            "role": "user",
-            "content": user_message,
-        }
-    )
-
-    try:
-
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-
-            headers={
-                "Authorization":
-                    f"Bearer {api_key}",
-
-                "Content-Type":
-                    "application/json",
-
-                "HTTP-Referer":
-                    "http://localhost:8501",
-
-                "X-Title":
-                    "N2 Sushi POS",
-            },
-
-            json={
-                "model": get_model(),
-
-                "messages": messages,
-
-                "temperature": 0.2,
-
-                "max_tokens": 700,
-            },
-
-            timeout=45,
-        )
-
-        response.raise_for_status()
-
-        data = response.json()
-
-        return (
-            data["choices"][0]
-            ["message"]
-            ["content"]
-        )
-
-    except Exception:
-
-        return local_chatbot(
-            user_message
-        )
+if "pdf" not in st.session_state:
+    st.session_state.pdf = None
 
 
 # ============================================================
-# SESSION STATE
-# ============================================================
-
-if "chat_messages" not in st.session_state:
-
-    st.session_state.chat_messages = []
-
-
-if "invoice_data" not in st.session_state:
-
-    st.session_state.invoice_data = None
-
-
-if "invoice_pdf" not in st.session_state:
-
-    st.session_state.invoice_pdf = None
-
-
-# ============================================================
-# HEADER
+# PREMIUM CSS
 # ============================================================
 
 st.markdown(
-    '<div class="main-title">🍣 N2 SUSHI</div>',
+    """
+    <style>
+
+    @import url(
+        'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap'
+    );
+
+    * {
+        font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .stApp {
+        background:
+            radial-gradient(
+                circle at top left,
+                #fff5ef 0%,
+                #fffaf7 35%,
+                #ffffff 100%
+            );
+    }
+
+    header[data-testid="stHeader"] {
+        background: transparent;
+    }
+
+    section[data-testid="stSidebar"] {
+        background:
+            linear-gradient(
+                180deg,
+                #241512 0%,
+                #160e0c 100%
+            );
+    }
+
+    section[data-testid="stSidebar"] * {
+        color: #fffaf7 !important;
+    }
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        margin-bottom: 25px;
+        background:
+            linear-gradient(
+                135deg,
+                #250b08,
+                #8e1515 55%,
+                #c83232
+            );
+        box-shadow:
+            0 20px 45px rgba(90, 20, 10, 0.20);
+    }
+
+    .hero-content {
+        padding: 36px 40px;
+        color: white;
+    }
+
+    .hero-kicker {
+        letter-spacing: 4px;
+        font-size: 12px;
+        text-transform: uppercase;
+        opacity: 0.75;
+    }
+
+    .hero-title {
+        font-size: 46px;
+        font-weight: 800;
+        line-height: 1.1;
+        margin: 7px 0;
+    }
+
+    .hero-subtitle {
+        font-size: 15px;
+        opacity: 0.85;
+    }
+
+    .hero-badge {
+        display: inline-block;
+        margin-top: 18px;
+        padding: 8px 15px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+        border: 1px solid rgba(255,255,255,0.2);
+        font-size: 12px;
+    }
+
+    .section-heading {
+        font-size: 25px;
+        font-weight: 800;
+        color: #33120e;
+        margin: 12px 0 15px;
+    }
+
+    .glass-card {
+        background: rgba(255,255,255,0.86);
+        border: 1px solid #f0e2dc;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow:
+            0 10px 30px rgba(70,20,10,0.06);
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 18px;
+        padding: 18px;
+        border: 1px solid #f0e4df;
+        box-shadow:
+            0 8px 25px rgba(70,20,10,0.06);
+    }
+
+    .metric-label {
+        color: #8b7770;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .metric-value {
+        color: #31120e;
+        font-size: 23px;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+
+    .total-card {
+        background:
+            linear-gradient(
+                135deg,
+                #8f1111,
+                #c92727
+            );
+        color: white;
+        border-radius: 22px;
+        padding: 25px;
+        box-shadow:
+            0 14px 35px rgba(143,17,17,0.24);
+    }
+
+    .total-small {
+        opacity: 0.75;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+
+    .total-price {
+        font-size: 38px;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+
+    .food-card {
+        background: white;
+        border: 1px solid #f0e3dd;
+        border-radius: 18px;
+        padding: 18px;
+        min-height: 155px;
+        box-shadow:
+            0 8px 25px rgba(70,20,10,0.05);
+    }
+
+    .food-name {
+        color: #35130f;
+        font-weight: 800;
+        font-size: 17px;
+    }
+
+    .food-desc {
+        color: #8c7770;
+        font-size: 12px;
+        margin: 7px 0;
+    }
+
+    .food-price {
+        color: #b51b1b;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .best-badge {
+        background: #fff0d4;
+        color: #9a6100;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .info-chip {
+        background: #fff4ef;
+        color: #8e2920;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        display: inline-block;
+        margin: 2px;
+    }
+
+    .stButton > button {
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        min-height: 44px;
+        transition: all 0.2s ease;
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-1px);
+    }
+
+    div[data-testid="stDataEditor"] {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #eadbd4;
+    }
+
+    div[data-testid="stTabs"] button {
+        font-weight: 700;
+    }
+
+    .footer {
+        text-align: center;
+        color: #9c8881;
+        font-size: 12px;
+        padding: 25px 0;
+    }
+
+    </style>
+    """,
     unsafe_allow_html=True,
 )
 
 
 # ============================================================
-# ẢNH QUÁN
+# HERO
 # ============================================================
 
-image_col1, image_col2, image_col3 = st.columns(
-    [1, 2, 1]
+st.markdown(
+    """
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker">
+                JAPANESE CUISINE
+            </div>
+
+            <div class="hero-title">
+                N2 Sushi
+            </div>
+
+            <div class="hero-subtitle">
+                Premium Sushi • Sashimi • Japanese Dining
+            </div>
+
+            <div class="hero-badge">
+                🍣 Fresh • Elegant • Japanese
+            </div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
-with image_col2:
 
-    try:
+# ============================================================
+# IMAGE
+# ============================================================
+
+img1, img2, img3 = st.columns([1, 2, 1])
+
+with img2:
+
+    if os.path.exists("sushi.jpg"):
 
         st.image(
             "sushi.jpg",
             width="stretch",
         )
 
-    except Exception:
+    else:
 
         st.warning(
-            "Không tìm thấy file sushi.jpg. "
-            "Hãy đặt sushi.jpg cùng thư mục với app.py."
+            "Không tìm thấy sushi.jpg. "
+            "Hãy đặt ảnh sushi.jpg cùng thư mục với app.py."
         )
 
 
-st.markdown(
-    '<div class="sub-title">'
-    "POS Order • Thanh toán • Tích điểm • Chatbot"
-    "</div>",
-    unsafe_allow_html=True,
-)
+# ============================================================
+# QUICK INFO
+# ============================================================
+
+q1, q2, q3, q4 = st.columns(4)
+
+with q1:
+
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">Địa chỉ</div>
+            <div class="metric-value">📍</div>
+            <div style="font-size:12px;color:#777">
+                {RESTAURANT['address']}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with q2:
+
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">Giờ mở cửa</div>
+            <div class="metric-value">🕐</div>
+            <div style="font-size:12px;color:#777">
+                {RESTAURANT['opening_hours']}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with q3:
+
+    st.markdown(
+        """
+        <div class="metric-card">
+            <div class="metric-label">Best Seller</div>
+            <div class="metric-value">⭐</div>
+            <div style="font-size:12px;color:#777">
+                Sushi & Sashimi
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+with q4:
+
+    st.markdown(
+        """
+        <div class="metric-card">
+            <div class="metric-label">Tích điểm</div>
+            <div class="metric-value">🎁</div>
+            <div style="font-size:12px;color:#777">
+                1 điểm / 10.000đ
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 
 # ============================================================
@@ -1352,32 +1196,62 @@ st.markdown(
 with st.sidebar:
 
     st.markdown(
-        "## 🤖 N2 Sushi Assistant"
+        """
+        <div style="
+            text-align:center;
+            padding:8px 0 18px;
+        ">
+            <div style="
+                font-size:42px;
+            ">
+                🍣
+            </div>
+
+            <div style="
+                font-size:23px;
+                font-weight:800;
+            ">
+                N2 Assistant
+            </div>
+
+            <div style="
+                font-size:11px;
+                opacity:.65;
+            ">
+                Your Japanese dining assistant
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
+
+    st.divider()
 
     if get_api_key():
 
         st.success(
-            "AI Chatbot: Đã kết nối"
+            "AI đang hoạt động"
         )
 
     else:
 
         st.info(
-            "AI Chatbot đang ở chế độ offline."
+            "Chế độ trợ lý offline"
         )
 
-    st.markdown("---")
-
-
-    for message in st.session_state.chat_messages:
+    for message in st.session_state.chat:
 
         if message["role"] == "user":
 
             st.markdown(
                 f"""
-                <div class="chat-user">
-                    <b>👤 Bạn</b><br>
+                <div style="
+                    background:#9d2020;
+                    padding:11px 13px;
+                    border-radius:14px;
+                    margin:8px 0;
+                ">
+                    <b>Bạn</b><br>
                     {message["content"]}
                 </div>
                 """,
@@ -1388,26 +1262,29 @@ with st.sidebar:
 
             st.markdown(
                 f"""
-                <div class="chat-bot">
-                    <b>🤖 N2 Sushi</b><br>
+                <div style="
+                    background:#3b2521;
+                    padding:11px 13px;
+                    border-radius:14px;
+                    margin:8px 0;
+                ">
+                    <b>🍣 N2 Sushi</b><br>
                     {message["content"]}
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-
-    user_message = st.chat_input(
+    chat_input = st.chat_input(
         "Hỏi N2 Sushi..."
     )
 
+    if chat_input:
 
-    if user_message:
-
-        st.session_state.chat_messages.append(
+        st.session_state.chat.append(
             {
                 "role": "user",
-                "content": user_message,
+                "content": chat_input,
             }
         )
 
@@ -1416,16 +1293,15 @@ with st.sidebar:
                 "role": x["role"],
                 "content": x["content"],
             }
-
-            for x in st.session_state.chat_messages
+            for x in st.session_state.chat
         ]
 
-        answer = ask_ai(
-            user_message,
+        answer = ai_bot(
+            chat_input,
             history[:-1],
         )
 
-        st.session_state.chat_messages.append(
+        st.session_state.chat.append(
             {
                 "role": "assistant",
                 "content": answer,
@@ -1434,13 +1310,12 @@ with st.sidebar:
 
         st.rerun()
 
-
     if st.button(
         "🗑️ Xóa hội thoại",
         use_container_width=True,
     ):
 
-        st.session_state.chat_messages = []
+        st.session_state.chat = []
 
         st.rerun()
 
@@ -1449,50 +1324,46 @@ with st.sidebar:
 # TABS
 # ============================================================
 
-tab_order, tab_menu, tab_invoice, tab_info = st.tabs(
+order_tab, menu_tab, invoice_tab, info_tab = st.tabs(
     [
-        "🧾 Tạo hóa đơn",
-        "🍣 Menu",
-        "📄 Hóa đơn",
-        "ℹ️ Thông tin",
+        "🧾  TẠO HÓA ĐƠN",
+        "🍣  MENU",
+        "📄  HÓA ĐƠN",
+        "ℹ️  N2 SUSHI",
     ]
 )
 
 
 # ============================================================
-# TAB TẠO HÓA ĐƠN
+# ORDER TAB
 # ============================================================
 
-with tab_order:
+with order_tab:
 
     st.markdown(
-        '<div class="section-title">'
+        '<div class="section-heading">'
         "Thông tin khách hàng"
         "</div>",
         unsafe_allow_html=True,
     )
 
+    c1, c2, c3 = st.columns(3)
 
-    col1, col2, col3 = st.columns(3)
-
-
-    with col1:
+    with c1:
 
         table_number = st.text_input(
             "🪑 Số bàn",
-            placeholder="Ví dụ: B12",
+            placeholder="VD: B12",
         )
 
-
-    with col2:
+    with c2:
 
         customer_name = st.text_input(
             "👤 Tên khách hàng",
             placeholder="Nguyễn Văn A",
         )
 
-
-    with col3:
+    with c3:
 
         phone = st.text_input(
             "📱 Số điện thoại tích điểm",
@@ -1501,21 +1372,11 @@ with tab_order:
 
 
     st.markdown(
-        '<div class="section-title">'
+        '<div class="section-heading">'
         "Chọn món"
         "</div>",
         unsafe_allow_html=True,
     )
-
-
-    st.caption(
-        "Một khách có thể chọn nhiều món khác nhau."
-    )
-
-
-    # --------------------------------------------------------
-    # BẢNG ORDER
-    # --------------------------------------------------------
 
     item_options = [
         "-- Chọn món --"
@@ -1524,126 +1385,95 @@ with tab_order:
         for x in MENU
     ]
 
-
-    default_rows = pd.DataFrame(
+    initial_rows = pd.DataFrame(
         [
             {
                 "Món": "-- Chọn món --",
                 "Số lượng": 0,
                 "Ghi chú": "",
             }
-
-            for _ in range(15)
+            for _ in range(12)
         ]
     )
 
-
-    edited_order = st.data_editor(
-
-        default_rows,
-
+    order_editor = st.data_editor(
+        initial_rows,
         width="stretch",
-
         hide_index=True,
-
         num_rows="fixed",
-
-        key="order_editor",
-
+        key="premium_order_editor",
         column_config={
-
             "Món": st.column_config.SelectboxColumn(
                 "🍣 Món",
                 options=item_options,
+                width="large",
             ),
-
-            "Số lượng":
-                st.column_config.NumberColumn(
-                    "🔢 Số lượng",
-                    min_value=0,
-                    max_value=100,
-                    step=1,
-                ),
-
-            "Ghi chú":
-                st.column_config.TextColumn(
-                    "📝 Ghi chú",
-                ),
+            "Số lượng": st.column_config.NumberColumn(
+                "SL",
+                min_value=0,
+                max_value=100,
+                step=1,
+                width="small",
+            ),
+            "Ghi chú": st.column_config.TextColumn(
+                "📝 Ghi chú",
+                width="large",
+            ),
         },
     )
 
 
-    # --------------------------------------------------------
-    # VOUCHER
-    # --------------------------------------------------------
-
     st.markdown(
-        '<div class="section-title">'
-        "Voucher"
+        '<div class="section-heading">'
+        "Voucher & thanh toán"
         "</div>",
         unsafe_allow_html=True,
     )
 
-
     voucher_code = st.text_input(
-        "🎟️ Nhập mã voucher",
-        placeholder="Ví dụ: N2WELCOME",
+        "🎟️ Mã voucher",
+        placeholder="N2WELCOME",
     )
 
 
-    # --------------------------------------------------------
-    # TÍNH ORDER
-    # --------------------------------------------------------
+    # BUILD ORDER
 
     order_items = []
 
+    for _, row in order_editor.iterrows():
 
-    for _, row in edited_order.iterrows():
-
-        item_name = row["Món"]
+        name = row["Món"]
 
         if (
-            pd.isna(item_name)
-            or item_name == "-- Chọn món --"
+            pd.isna(name)
+            or name == "-- Chọn món --"
         ):
             continue
 
-
         try:
-
             quantity = int(
                 row["Số lượng"]
             )
-
         except Exception:
-
             quantity = 0
-
 
         if quantity <= 0:
             continue
 
-
-        item = MENU_LOOKUP.get(
-            item_name
-        )
-
+        item = MENU_LOOKUP.get(name)
 
         if not item:
             continue
-
 
         note = row["Ghi chú"]
 
         if pd.isna(note):
             note = ""
 
-
         line_total = (
             item["price"]
             * quantity
         )
-
 
         order_items.append(
             {
@@ -1663,121 +1493,103 @@ with tab_order:
         for x in order_items
     )
 
-
-    discount, voucher_message = (
-        calculate_voucher(
-            subtotal,
-            voucher_code,
-        )
+    discount, voucher_message = calculate_voucher(
+        subtotal,
+        voucher_code,
     )
-
 
     total = max(
         0,
         subtotal - discount,
     )
 
-
-    points = calculate_points(
-        total
-    )
+    points = loyalty_points(total)
 
 
-    # --------------------------------------------------------
-    # HIỂN THỊ ORDER
-    # --------------------------------------------------------
-
-    st.markdown(
-        '<div class="section-title">'
-        "Kiểm tra đơn hàng"
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
+    # SUMMARY
 
     if order_items:
 
-        result_df = pd.DataFrame(
+        st.markdown(
+            '<div class="section-heading">'
+            "Đơn hàng"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+        order_df = pd.DataFrame(
             [
                 {
                     "Món": x["name"],
-                    "Loại": x["category"],
-                    "Số lượng": x["quantity"],
-                    "Đơn giá":
-                        format_currency(
-                            x["price"]
-                        ),
+                    "SL": x["quantity"],
+                    "Đơn giá": money(x["price"]),
                     "Ghi chú": x["note"],
-                    "Thành tiền":
-                        format_currency(
-                            x["line_total"]
-                        ),
+                    "Thành tiền": money(x["line_total"]),
                 }
-
                 for x in order_items
             ]
         )
 
-
         st.dataframe(
-            result_df,
+            order_df,
             width="stretch",
             hide_index=True,
         )
 
     else:
 
-        st.warning(
-            "Chưa có món nào."
+        st.info(
+            "Chưa có món nào. Hãy chọn món ở bảng phía trên."
         )
 
 
-    # --------------------------------------------------------
-    # TỔNG TIỀN
-    # --------------------------------------------------------
+    # TOTAL CARDS
 
-    c1, c2, c3, c4 = st.columns(4)
+    m1, m2, m3 = st.columns(3)
 
-
-    with c1:
-
-        st.metric(
-            "Tạm tính",
-            format_currency(
-                subtotal
-            ),
-        )
-
-
-    with c2:
-
-        st.metric(
-            "Giảm voucher",
-            format_currency(
-                discount
-            ),
-        )
-
-
-    with c3:
-
-        st.metric(
-            "Điểm tích lũy",
-            f"+{points}",
-        )
-
-
-    with c4:
+    with m1:
 
         st.markdown(
             f"""
-            <div class="total-box">
-                <div class="total-label">
-                    TỔNG THANH TOÁN
+            <div class="metric-card">
+                <div class="metric-label">
+                    Tạm tính
                 </div>
+                <div class="metric-value">
+                    {money(subtotal)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-                <div class="total-number">
-                    {format_currency(total)}
+    with m2:
+
+        st.markdown(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">
+                    Voucher
+                </div>
+                <div class="metric-value"
+                     style="color:#198754">
+                    - {money(discount)}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with m3:
+
+        st.markdown(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">
+                    Điểm tích lũy
+                </div>
+                <div class="metric-value">
+                    +{points}
                 </div>
             </div>
             """,
@@ -1785,309 +1597,282 @@ with tab_order:
         )
 
 
-    if voucher_code:
-
-        if discount > 0:
-
-            st.success(
-                voucher_message
-            )
-
-        else:
-
-            st.warning(
-                voucher_message
-            )
+    st.markdown("<br>", unsafe_allow_html=True)
 
 
-    st.markdown("---")
-
-
-    # --------------------------------------------------------
-    # THANH TOÁN
-    # --------------------------------------------------------
-
-    payment_col1, payment_col2 = st.columns(
+    total_col, button_col = st.columns(
         [2, 1]
     )
 
-
-    with payment_col1:
+    with total_col:
 
         st.markdown(
             f"""
-            **Bàn:** {table_number or "---"}
+            <div class="total-card">
 
-            **Khách hàng:** {customer_name or "---"}
+                <div class="total-small">
+                    Tổng thanh toán
+                </div>
 
-            **SĐT:** {phone or "---"}
+                <div class="total-price">
+                    {money(total)}
+                </div>
 
-            **Số loại món:** {len(order_items)}
+                <div style="
+                    margin-top:8px;
+                    opacity:.78;
+                    font-size:12px;
+                ">
+                    N2 Sushi • Premium Japanese Dining
+                </div>
 
-            **Tổng số lượng:** {
-                sum(
-                    x["quantity"]
-                    for x in order_items
-                )
-            }
-            """
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
 
-    with payment_col2:
+    with button_col:
 
-        pay = st.button(
-            "💳 THANH TOÁN",
+        st.markdown(
+            "<br>",
+            unsafe_allow_html=True,
+        )
+
+        payment_button = st.button(
+            "💳  THANH TOÁN",
             type="primary",
             use_container_width=True,
         )
 
-
-        if pay:
+        if payment_button:
 
             errors = []
 
-
             if not table_number.strip():
-
                 errors.append(
                     "Vui lòng nhập số bàn."
                 )
 
-
             if not customer_name.strip():
-
                 errors.append(
                     "Vui lòng nhập tên khách hàng."
                 )
 
-
             if not order_items:
-
                 errors.append(
                     "Vui lòng chọn ít nhất một món."
                 )
 
-
             if errors:
 
                 for error in errors:
-
                     st.error(error)
 
             else:
 
                 invoice = {
-
-                    "invoice_number":
-                        generate_invoice_number(),
-
-                    "created_at":
-                        datetime.now(),
-
-                    "table_number":
-                        table_number,
-
-                    "customer_name":
-                        customer_name,
-
-                    "phone":
-                        phone,
-
-                    "items":
-                        order_items,
-
-                    "subtotal":
-                        subtotal,
-
-                    "discount":
-                        discount,
-
-                    "total":
-                        total,
-
-                    "voucher_code":
-                        voucher_code.upper(),
-
-                    "points":
-                        points,
+                    "number": invoice_number(),
+                    "time": datetime.now(),
+                    "table": table_number,
+                    "customer": customer_name,
+                    "phone": phone,
+                    "items": order_items,
+                    "subtotal": subtotal,
+                    "discount": discount,
+                    "total": total,
+                    "voucher": voucher_code.upper(),
+                    "points": points,
                 }
 
-
-                st.session_state.invoice_data = invoice
-
+                st.session_state.invoice = invoice
 
                 if REPORTLAB_AVAILABLE:
 
-                    st.session_state.invoice_pdf = (
-                        create_invoice_pdf(
-                            invoice
-                        )
+                    st.session_state.pdf = create_pdf(
+                        invoice
                     )
 
                 else:
 
-                    st.session_state.invoice_pdf = None
-
+                    st.session_state.pdf = None
 
                 st.success(
-                    "✅ Thanh toán thành công! "
-                    f"Mã hóa đơn: "
-                    f"{invoice['invoice_number']}"
+                    "Thanh toán thành công!"
                 )
 
                 st.balloons()
 
 
 # ============================================================
-# TAB MENU
+# MENU TAB
 # ============================================================
 
-with tab_menu:
+with menu_tab:
 
     st.markdown(
-        '<div class="section-title">'
-        "🍣 Menu N2 Sushi"
+        '<div class="section-heading">'
+        "Menu N2 Sushi"
         "</div>",
         unsafe_allow_html=True,
     )
 
-
-    category = st.selectbox(
-        "Danh mục",
-        [
-            "Tất cả",
-            "Món ăn",
-            "Combo",
-            "Nước uống",
-        ],
+    filter_col, search_col = st.columns(
+        [1, 2]
     )
 
+    with filter_col:
 
-    search = st.text_input(
-        "🔎 Tìm món",
-        placeholder="Nhập tên món...",
-    )
+        category = st.selectbox(
+            "Danh mục",
+            [
+                "Tất cả",
+                "Món ăn",
+                "Combo",
+                "Nước uống",
+            ],
+        )
 
+    with search_col:
 
-    menu_display = MENU_DF.copy()
-
-
-    if category != "Tất cả":
-
-        menu_display = menu_display[
-            menu_display["category"]
-            == category
-        ]
-
-
-    if search.strip():
-
-        menu_display = menu_display[
-            menu_display["name"]
-            .str.lower()
-            .str.contains(
-                search.lower(),
-                na=False,
-            )
-        ]
-
-
-    display = []
-
-
-    for _, row in menu_display.iterrows():
-
-        display.append(
-            {
-                "Mã":
-                    row["code"],
-
-                "Món":
-                    row["name"],
-
-                "Loại":
-                    row["category"],
-
-                "Giá":
-                    format_currency(
-                        row["price"]
-                    ),
-
-                "⭐":
-                    "Best seller"
-                    if row["bestseller"]
-                    else "",
-
-                "Mô tả":
-                    row["description"],
-            }
+        search = st.text_input(
+            "🔎 Tìm món",
+            placeholder="Nhập tên món...",
         )
 
 
-    st.dataframe(
-        pd.DataFrame(display),
-        width="stretch",
-        hide_index=True,
-    )
+    filtered = MENU.copy()
+
+    if category != "Tất cả":
+
+        filtered = [
+            x
+            for x in filtered
+            if x["category"] == category
+        ]
+
+    if search.strip():
+
+        filtered = [
+            x
+            for x in filtered
+            if search.lower()
+            in x["name"].lower()
+        ]
+
+
+    cols = st.columns(3)
+
+    for index, item in enumerate(filtered):
+
+        with cols[index % 3]:
+
+            badge = (
+                '<span class="best-badge">'
+                "⭐ BEST SELLER"
+                "</span>"
+                if item["bestseller"]
+                else ""
+            )
+
+            st.markdown(
+                f"""
+                <div class="food-card">
+
+                    {badge}
+
+                    <div style="height:8px;"></div>
+
+                    <div class="food-name">
+                        {item['name']}
+                    </div>
+
+                    <div class="food-desc">
+                        {item['description']}
+                    </div>
+
+                    <div class="food-price">
+                        {money(item['price'])}
+                    </div>
+
+                    <div style="
+                        margin-top:8px;
+                    ">
+                        <span class="info-chip">
+                            {item['category']}
+                        </span>
+
+                        <span class="info-chip">
+                            {item['code']}
+                        </span>
+                    </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                "<div style='height:12px'></div>",
+                unsafe_allow_html=True,
+            )
 
 
 # ============================================================
-# TAB HÓA ĐƠN
+# INVOICE TAB
 # ============================================================
 
-with tab_invoice:
+with invoice_tab:
 
     st.markdown(
-        '<div class="section-title">'
-        "📄 Hóa đơn gần nhất"
+        '<div class="section-heading">'
+        "Hóa đơn gần nhất"
         "</div>",
         unsafe_allow_html=True,
     )
 
-
-    invoice = (
-        st.session_state.invoice_data
-    )
-
+    invoice = st.session_state.invoice
 
     if not invoice:
 
         st.info(
-            "Chưa có hóa đơn."
+            "Chưa có hóa đơn. "
+            "Hãy tạo đơn và bấm Thanh toán."
         )
 
     else:
 
-        st.success(
-            f"Hóa đơn: "
-            f"{invoice['invoice_number']}"
-        )
-
-
         st.markdown(
             f"""
-            <div class="info-card">
+            <div class="glass-card">
+
+            <h3 style="color:#a31313;">
+                N2 SUSHI
+            </h3>
 
             <b>Mã hóa đơn:</b>
-            {invoice['invoice_number']}
+            {invoice['number']}
+
             <br><br>
 
             <b>Thời gian:</b>
-            {invoice['created_at'].strftime(
+            {invoice['time'].strftime(
                 '%d/%m/%Y %H:%M:%S'
             )}
+
             <br><br>
 
             <b>Bàn:</b>
-            {invoice['table_number']}
+            {invoice['table']}
+
             <br><br>
 
             <b>Khách hàng:</b>
-            {invoice['customer_name']}
+            {invoice['customer']}
+
             <br><br>
 
-            <b>SĐT:</b>
+            <b>Số điện thoại:</b>
             {invoice['phone'] or '---'}
 
             </div>
@@ -2096,28 +1881,24 @@ with tab_invoice:
         )
 
 
+        st.markdown(
+            "<br>",
+            unsafe_allow_html=True,
+        )
+
+
         invoice_df = pd.DataFrame(
             [
                 {
                     "Món": x["name"],
-                    "Số lượng":
-                        x["quantity"],
-                    "Đơn giá":
-                        format_currency(
-                            x["price"]
-                        ),
-                    "Ghi chú":
-                        x["note"],
-                    "Thành tiền":
-                        format_currency(
-                            x["line_total"]
-                        ),
+                    "SL": x["quantity"],
+                    "Đơn giá": money(x["price"]),
+                    "Ghi chú": x["note"],
+                    "Thành tiền": money(x["line_total"]),
                 }
-
                 for x in invoice["items"]
             ]
         )
-
 
         st.dataframe(
             invoice_df,
@@ -2126,156 +1907,227 @@ with tab_invoice:
         )
 
 
-        st.markdown(
-            f"""
-            ### Tổng kết
+        total_col1, total_col2 = st.columns(2)
 
-            **Tạm tính:** {
-                format_currency(
-                    invoice["subtotal"]
-                )
-            }
+        with total_col1:
 
-            **Giảm voucher:** {
-                format_currency(
-                    invoice["discount"]
-                )
-            }
+            st.markdown(
+                f"""
+                <div class="glass-card">
 
-            # **TỔNG THANH TOÁN: {
-                format_currency(
-                    invoice["total"]
-                )
-            }**
+                <b>Tạm tính</b>
+                <br>
+                {money(invoice['subtotal'])}
 
-            **Điểm tích lũy:** +
-            {invoice["points"]} điểm
-            """
-        )
+                <br><br>
+
+                <b>Voucher</b>
+                <br>
+                - {money(invoice['discount'])}
+
+                <br><br>
+
+                <b>Điểm tích lũy</b>
+                <br>
+                +{invoice['points']} điểm
+
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with total_col2:
+
+            st.markdown(
+                f"""
+                <div class="total-card">
+
+                    <div class="total-small">
+                        Tổng thanh toán
+                    </div>
+
+                    <div class="total-price">
+                        {money(invoice['total'])}
+                    </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 
-        if st.session_state.invoice_pdf:
+        st.markdown("<br>", unsafe_allow_html=True)
+
+
+        if st.session_state.pdf:
 
             st.download_button(
-
-                "📥 TẢI HÓA ĐƠN PDF",
-
-                data=st.session_state.invoice_pdf,
-
-                file_name=(
-                    f"{invoice['invoice_number']}.pdf"
-                ),
-
+                "📥  TẢI HÓA ĐƠN PDF",
+                data=st.session_state.pdf,
+                file_name=f"{invoice['number']}.pdf",
                 mime="application/pdf",
-
-                use_container_width=True,
-
                 type="primary",
+                use_container_width=True,
+            )
+
+        elif not REPORTLAB_AVAILABLE:
+
+            st.warning(
+                "Muốn tải PDF, hãy cài reportlab:"
+            )
+
+            st.code(
+                "pip install reportlab"
             )
 
 
 # ============================================================
-# TAB THÔNG TIN
+# INFO TAB
 # ============================================================
 
-with tab_info:
+with info_tab:
 
     st.markdown(
-        '<div class="section-title">'
-        "ℹ️ Thông tin N2 Sushi"
+        '<div class="section-heading">'
+        "N2 Sushi"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    left, right = st.columns(2)
+
+    with left:
+
+        st.markdown(
+            f"""
+            <div class="glass-card">
+
+                <h3 style="color:#a31313;">
+                    🍣 N2 Sushi
+                </h3>
+
+                <p>
+                    <b>📍 Địa chỉ</b><br>
+                    {RESTAURANT['address']}
+                </p>
+
+                <p>
+                    <b>☎️ Điện thoại</b><br>
+                    {RESTAURANT['phone']}
+                </p>
+
+                <p>
+                    <b>🕐 Giờ mở cửa</b><br>
+                    {RESTAURANT['opening_hours']}
+                </p>
+
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+    with right:
+
+        bestsellers = [
+            x for x in MENU
+            if x["bestseller"]
+        ]
+
+        best_text = ""
+
+        for item in bestsellers:
+
+            best_text += (
+                f"""
+                <div style="
+                    padding:9px 0;
+                    border-bottom:1px solid #eee;
+                ">
+                    ⭐ <b>{item['name']}</b>
+                    <span style="
+                        float:right;
+                        color:#b51b1b;
+                        font-weight:700;
+                    ">
+                        {money(item['price'])}
+                    </span>
+                </div>
+                """
+            )
+
+        st.markdown(
+            f"""
+            <div class="glass-card">
+
+                <h3 style="color:#a31313;">
+                    ⭐ Best Seller
+                </h3>
+
+                {best_text}
+
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+
+    st.markdown(
+        '<div class="section-heading">'
+        "🎁 Voucher"
         "</div>",
         unsafe_allow_html=True,
     )
 
 
-    c1, c2 = st.columns(2)
+    voucher_cols = st.columns(3)
 
+    for index, (code, data) in enumerate(
+        VOUCHERS.items()
+    ):
 
-    with c1:
+        with voucher_cols[index % 3]:
 
-        st.markdown(
-            f"""
-            <div class="info-card">
+            st.markdown(
+                f"""
+                <div class="glass-card">
 
-            <h3>🍣 N2 Sushi</h3>
+                    <div style="
+                        color:#a31313;
+                        font-weight:800;
+                        font-size:18px;
+                    ">
+                        🎟️ {code}
+                    </div>
 
-            <b>📍 Địa chỉ</b><br>
-            {RESTAURANT['address']}
+                    <div style="
+                        color:#777;
+                        font-size:12px;
+                        margin-top:8px;
+                    ">
+                        {data['description']}
+                    </div>
 
-            <br><br>
-
-            <b>☎️ Điện thoại</b><br>
-            {RESTAURANT['phone']}
-
-            <br><br>
-
-            <b>🕐 Giờ mở cửa</b><br>
-            {RESTAURANT['opening_hours']}
-
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-
-    with c2:
-
-        st.markdown(
-            """
-            <div class="info-card">
-
-            <h3>⭐ Best Seller</h3>
-            """,
-            unsafe_allow_html=True,
-        )
-
-
-        for item in MENU:
-
-            if item["bestseller"]:
-
-                st.write(
-                    f"🍣 **{item['name']}** — "
-                    f"{format_currency(item['price'])}"
-                )
-
-
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-
-    st.markdown("---")
-
-    st.markdown(
-        "### 🎁 Voucher hiện có"
-    )
-
-
-    for code, voucher in VOUCHERS.items():
-
-        st.markdown(
-            f"""
-            <div class="info-card">
-
-            <b>🎟️ {code}</b><br>
-
-            {voucher['description']}
-
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 
 # ============================================================
 # FOOTER
 # ============================================================
 
-st.markdown("---")
-
-st.caption(
-    "🍣 N2 Sushi POS • Order • Thanh toán • "
-    "Voucher • Tích điểm • Hóa đơn • AI Assistant"
+st.markdown(
+    """
+    <div class="footer">
+        🍣 N2 Sushi &nbsp;•&nbsp;
+        Japanese Cuisine &nbsp;•&nbsp;
+        Order & Payment System
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
