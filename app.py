@@ -40,7 +40,7 @@ st.set_page_config(
 # =========================================================
 
 RESTAURANT_NAME = "N2 Sushi"
-RESTAURANT_ADDRESS = "Địa chỉ N2 Sushi - cập nhật địa chỉ tại đây"
+RESTAURANT_ADDRESS = "Địa chỉ N2 Sushi - số 8 đường Nguyễn Huệ Thành Phố Hồ Chí Minh"
 RESTAURANT_PHONE = "0900 000 000"
 RESTAURANT_HOURS = "10:00 - 22:00 hàng ngày"
 
