@@ -1,10 +1,26 @@
 
 import os
+import textwrap
 import uuid
 from datetime import datetime
 
 import requests
 import streamlit as st
+
+
+
+# =========================================================
+# HÀM RENDER HTML AN TOÀN
+# Xóa khoảng trắng đầu dòng để Streamlit không hiểu HTML
+# là một khối code Markdown.
+# =========================================================
+
+def clean_html(content):
+    return "\n".join(line.lstrip() for line in content.splitlines())
+
+
+def html_markdown(content, *args, **kwargs):
+    return st.markdown(clean_html(content), *args, **kwargs)
 
 
 # =========================================================
@@ -485,7 +501,7 @@ Nếu không biết thông tin thì nói khách liên hệ nhân viên N2 Sushi.
 # 9. CSS
 # =========================================================
 
-st.markdown(
+html_markdown(
     """
 <style>
 
@@ -959,7 +975,7 @@ section[data-testid="stSidebar"] .stButton > button:hover {
 # 10. HEADER
 # =========================================================
 
-st.markdown(
+html_markdown(
     """
 <div class="hero">
 
@@ -1010,14 +1026,14 @@ else:
 # 12. THÔNG TIN NHANH
 # =========================================================
 
-st.markdown("<br>", unsafe_allow_html=True)
+html_markdown("<br>", unsafe_allow_html=True)
 
 info1, info2, info3, info4 = st.columns(4)
 
 
 with info1:
 
-    st.markdown(
+    html_markdown(
         f"""
 <div class="info-box">
 
@@ -1045,7 +1061,7 @@ margin-top:5px;
 
 with info2:
 
-    st.markdown(
+    html_markdown(
         f"""
 <div class="info-box">
 
@@ -1073,7 +1089,7 @@ Hàng ngày
 
 with info3:
 
-    st.markdown(
+    html_markdown(
         """
 <div class="info-box">
 
@@ -1101,7 +1117,7 @@ Món được yêu thích
 
 with info4:
 
-    st.markdown(
+    html_markdown(
         """
 <div class="info-box">
 
@@ -1133,7 +1149,7 @@ Dành cho khách hàng
 
 with st.sidebar:
 
-    st.markdown(
+    html_markdown(
         """
 <div style="
 text-align:center;
@@ -1175,7 +1191,7 @@ Trợ lý N2 Sushi
 
         if message["role"] == "user":
 
-            st.markdown(
+            html_markdown(
                 f"""
 <div class="chat-user">
 
@@ -1199,7 +1215,7 @@ Trợ lý N2 Sushi
                 "<br>",
             )
 
-            st.markdown(
+            html_markdown(
                 f"""
 <div class="chat-bot">
 
@@ -1259,7 +1275,7 @@ Trợ lý N2 Sushi
 # 14. THÔNG TIN KHÁCH HÀNG
 # =========================================================
 
-st.markdown(
+html_markdown(
     '<div class="section-title">'
     "🧾 Thông tin đơn hàng"
     "</div>",
@@ -1311,7 +1327,7 @@ menu_column, cart_column = st.columns(
 
 with menu_column:
 
-    st.markdown(
+    html_markdown(
         '<div class="section-title">'
         "🍣 Chọn món"
         "</div>",
@@ -1387,7 +1403,7 @@ with menu_column:
                 )
 
 
-            st.markdown(
+            html_markdown(
                 f"""
 <div class="food-card">
 
@@ -1468,7 +1484,7 @@ with menu_column:
 
                 with qty_col:
 
-                    st.markdown(
+                    html_markdown(
                         f"""
 <div style="
 background:#fff3ef;
@@ -1534,14 +1550,14 @@ color:#8f1717;
 
 with cart_column:
 
-    st.markdown(
+    html_markdown(
         '<div class="section-title">'
         "🛒 Đơn hàng"
         "</div>",
         unsafe_allow_html=True,
     )
 
-    st.markdown(
+    html_markdown(
         '<div class="cart-card">',
         unsafe_allow_html=True,
     )
@@ -1549,7 +1565,7 @@ with cart_column:
 
     if not st.session_state.cart:
 
-        st.markdown(
+        html_markdown(
             """
 <div style="
 text-align:center;
@@ -1597,7 +1613,7 @@ Chọn món bên trái để bắt đầu order
                 * quantity
             )
 
-            st.markdown(
+            html_markdown(
                 f"""
 <div class="cart-item">
 
@@ -1635,7 +1651,7 @@ margin-top:3px;
             )
 
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        html_markdown("<br>", unsafe_allow_html=True)
 
 
         # Voucher
@@ -1681,7 +1697,7 @@ margin-top:3px;
 
         # Tổng tiền
 
-        st.markdown(
+        html_markdown(
             f"""
 <div style="
 display:flex;
@@ -1735,7 +1751,7 @@ font-size:13px;
         )
 
 
-        st.markdown(
+        html_markdown(
             f"""
 <div class="total-card">
 
@@ -1761,7 +1777,7 @@ margin-top:5px;
         )
 
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        html_markdown("<br>", unsafe_allow_html=True)
 
 
         if st.button(
@@ -1873,7 +1889,7 @@ margin-top:5px;
                 st.balloons()
 
 
-    st.markdown(
+    html_markdown(
         "</div>",
         unsafe_allow_html=True,
     )
@@ -1888,7 +1904,7 @@ invoice = st.session_state.invoice
 
 if invoice:
 
-    st.markdown(
+    html_markdown(
         '<div class="section-title">'
         "📄 Hóa đơn vừa thanh toán"
         "</div>",
@@ -1903,7 +1919,7 @@ if invoice:
 
     with invoice_left:
 
-        st.markdown(
+        html_markdown(
             f"""
 <div class="info-box">
 
@@ -1970,7 +1986,7 @@ line-height:1.9;
                 )
 
 
-            st.markdown(
+            html_markdown(
                 f"""
 <div style="
 display:flex;
@@ -2009,7 +2025,7 @@ color:#a71919;
             )
 
 
-        st.markdown(
+        html_markdown(
             "</div>",
             unsafe_allow_html=True,
         )
@@ -2017,7 +2033,7 @@ color:#a71919;
 
     with invoice_right:
 
-        st.markdown(
+        html_markdown(
             f"""
 <div class="total-card">
 
@@ -2057,7 +2073,7 @@ Voucher:
         )
 
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        html_markdown("<br>", unsafe_allow_html=True)
 
 
         # Tạo file hóa đơn CSV
@@ -2111,7 +2127,7 @@ Voucher:
 # 19. FOOTER
 # =========================================================
 
-st.markdown(
+html_markdown(
     """
 <div class="footer">
 
