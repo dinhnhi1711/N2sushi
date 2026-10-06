@@ -1,14 +1,14 @@
+
 import os
-import io
 import uuid
 from datetime import datetime
 
-import streamlit as st
 import requests
+import streamlit as st
 
 
 # =========================================================
-# CẤU HÌNH
+# 1. CẤU HÌNH TRANG
 # =========================================================
 
 st.set_page_config(
@@ -20,19 +20,17 @@ st.set_page_config(
 
 
 # =========================================================
-# THÔNG TIN QUÁN
+# 2. THÔNG TIN QUÁN
 # =========================================================
 
-RESTAURANT = {
-    "name": "N2 Sushi",
-    "address": "Địa chỉ N2 Sushi - cập nhật tại đây",
-    "phone": "0900 000 000",
-    "hours": "10:00 - 22:00 hàng ngày",
-}
+RESTAURANT_NAME = "N2 Sushi"
+RESTAURANT_ADDRESS = "Địa chỉ N2 Sushi - cập nhật địa chỉ tại đây"
+RESTAURANT_PHONE = "0900 000 000"
+RESTAURANT_HOURS = "10:00 - 22:00 hàng ngày"
 
 
 # =========================================================
-# MENU
+# 3. MENU
 # =========================================================
 
 MENU = [
@@ -41,7 +39,7 @@ MENU = [
         "name": "Sushi cá hồi",
         "category": "Sushi",
         "price": 69000,
-        "desc": "Cá hồi tươi, cơm sushi Nhật",
+        "description": "Cá hồi tươi cùng cơm sushi Nhật",
         "best": True,
     },
     {
@@ -49,7 +47,7 @@ MENU = [
         "name": "Sushi cá ngừ",
         "category": "Sushi",
         "price": 65000,
-        "desc": "Cá ngừ tươi cùng cơm sushi",
+        "description": "Cá ngừ tươi cùng cơm sushi",
         "best": True,
     },
     {
@@ -57,7 +55,7 @@ MENU = [
         "name": "Sashimi cá hồi",
         "category": "Sashimi",
         "price": 129000,
-        "desc": "Cá hồi tươi cắt lát",
+        "description": "Cá hồi tươi cắt lát kiểu Nhật",
         "best": True,
     },
     {
@@ -65,7 +63,7 @@ MENU = [
         "name": "Sashimi tổng hợp",
         "category": "Sashimi",
         "price": 229000,
-        "desc": "Tổng hợp nhiều loại sashimi",
+        "description": "Tổng hợp nhiều loại sashimi",
         "best": True,
     },
     {
@@ -73,7 +71,7 @@ MENU = [
         "name": "Maki cá hồi bơ",
         "category": "Maki",
         "price": 89000,
-        "desc": "Cá hồi, bơ và rong biển",
+        "description": "Cá hồi, bơ và rong biển",
         "best": True,
     },
     {
@@ -81,7 +79,7 @@ MENU = [
         "name": "Maki tempura tôm",
         "category": "Maki",
         "price": 99000,
-        "desc": "Tôm tempura cuộn maki",
+        "description": "Tôm tempura cuộn maki",
         "best": False,
     },
     {
@@ -89,7 +87,7 @@ MENU = [
         "name": "Salmon Aburi",
         "category": "Sushi",
         "price": 109000,
-        "desc": "Cá hồi áp lửa kiểu Nhật",
+        "description": "Cá hồi áp lửa kiểu Nhật",
         "best": True,
     },
     {
@@ -97,7 +95,7 @@ MENU = [
         "name": "Unagi Sushi",
         "category": "Sushi",
         "price": 119000,
-        "desc": "Sushi lươn Nhật",
+        "description": "Sushi lươn Nhật",
         "best": False,
     },
     {
@@ -105,7 +103,7 @@ MENU = [
         "name": "Gyoza",
         "category": "Món ăn",
         "price": 79000,
-        "desc": "Bánh xếp Nhật",
+        "description": "Bánh xếp Nhật",
         "best": False,
     },
     {
@@ -113,7 +111,7 @@ MENU = [
         "name": "Edamame",
         "category": "Món ăn",
         "price": 49000,
-        "desc": "Đậu nành Nhật",
+        "description": "Đậu nành Nhật",
         "best": False,
     },
     {
@@ -121,7 +119,7 @@ MENU = [
         "name": "Combo N2 Couple",
         "category": "Combo",
         "price": 299000,
-        "desc": "Combo dành cho 2 người",
+        "description": "Combo dành cho 2 người",
         "best": True,
     },
     {
@@ -129,7 +127,7 @@ MENU = [
         "name": "Combo N2 Family",
         "category": "Combo",
         "price": 429000,
-        "desc": "Combo dành cho 3 người",
+        "description": "Combo dành cho 3 người",
         "best": True,
     },
     {
@@ -137,7 +135,7 @@ MENU = [
         "name": "Combo N2 Party",
         "category": "Combo",
         "price": 649000,
-        "desc": "Combo dành cho 4-5 người",
+        "description": "Combo dành cho 4-5 người",
         "best": True,
     },
     {
@@ -145,7 +143,7 @@ MENU = [
         "name": "Coca-Cola",
         "category": "Nước uống",
         "price": 25000,
-        "desc": "Nước ngọt",
+        "description": "Nước ngọt Coca-Cola",
         "best": False,
     },
     {
@@ -153,7 +151,7 @@ MENU = [
         "name": "Sprite",
         "category": "Nước uống",
         "price": 25000,
-        "desc": "Nước ngọt",
+        "description": "Nước ngọt Sprite",
         "best": False,
     },
     {
@@ -161,7 +159,7 @@ MENU = [
         "name": "Trà đào",
         "category": "Nước uống",
         "price": 45000,
-        "desc": "Trà đào mát lạnh",
+        "description": "Trà đào mát lạnh",
         "best": True,
     },
     {
@@ -169,11 +167,10 @@ MENU = [
         "name": "Trà xanh Nhật",
         "category": "Nước uống",
         "price": 35000,
-        "desc": "Trà xanh Nhật",
+        "description": "Trà xanh Nhật",
         "best": False,
     },
 ]
-
 
 MENU_BY_ID = {
     item["id"]: item
@@ -182,33 +179,33 @@ MENU_BY_ID = {
 
 
 # =========================================================
-# VOUCHER
+# 4. VOUCHER
 # =========================================================
 
 VOUCHERS = {
     "N2WELCOME": {
         "type": "percent",
         "value": 10,
-        "max": 100000,
+        "max_discount": 100000,
         "minimum": 200000,
     },
     "N2SAVE50": {
         "type": "fixed",
         "value": 50000,
-        "max": 50000,
+        "max_discount": 50000,
         "minimum": 300000,
     },
     "N2VIP": {
         "type": "percent",
         "value": 15,
-        "max": 150000,
+        "max_discount": 150000,
         "minimum": 500000,
     },
 }
 
 
 # =========================================================
-# SESSION STATE
+# 5. SESSION STATE
 # =========================================================
 
 if "cart" not in st.session_state:
@@ -217,19 +214,19 @@ if "cart" not in st.session_state:
 if "notes" not in st.session_state:
     st.session_state.notes = {}
 
-if "chat" not in st.session_state:
-    st.session_state.chat = []
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = []
 
 if "invoice" not in st.session_state:
     st.session_state.invoice = None
 
 
 # =========================================================
-# HELPER
+# 6. HÀM TIỆN ÍCH
 # =========================================================
 
-def money(number):
-    return f"{int(number):,}".replace(",", ".") + " ₫"
+def money(value):
+    return f"{int(value):,}".replace(",", ".") + " ₫"
 
 
 def add_item(item_id):
@@ -240,91 +237,81 @@ def add_item(item_id):
 
 
 def remove_item(item_id):
-    if item_id in st.session_state.cart:
+    if item_id not in st.session_state.cart:
+        return
 
-        st.session_state.cart[item_id] -= 1
+    st.session_state.cart[item_id] -= 1
 
-        if st.session_state.cart[item_id] <= 0:
-            del st.session_state.cart[item_id]
+    if st.session_state.cart[item_id] <= 0:
+        del st.session_state.cart[item_id]
 
-            if item_id in st.session_state.notes:
-                del st.session_state.notes[item_id]
-
-
-def clear_cart():
-    st.session_state.cart = {}
-    st.session_state.notes = {}
+        if item_id in st.session_state.notes:
+            del st.session_state.notes[item_id]
 
 
-def get_subtotal():
+def subtotal():
     total = 0
 
     for item_id, quantity in st.session_state.cart.items():
-
         item = MENU_BY_ID[item_id]
-
         total += item["price"] * quantity
 
     return total
 
 
-def calculate_discount(subtotal, voucher):
-
-    code = voucher.strip().upper()
+def calculate_voucher(code, amount):
+    code = code.strip().upper()
 
     if not code:
         return 0, ""
 
     if code not in VOUCHERS:
-        return 0, "❌ Voucher không tồn tại."
+        return 0, "Voucher không tồn tại."
 
-    data = VOUCHERS[code]
+    voucher = VOUCHERS[code]
 
-    if subtotal < data["minimum"]:
+    if amount < voucher["minimum"]:
         return (
             0,
-            f"❌ Đơn tối thiểu {money(data['minimum'])}.",
+            f"Đơn hàng tối thiểu {money(voucher['minimum'])}.",
         )
 
-    if data["type"] == "percent":
-
-        discount = (
-            subtotal
-            * data["value"]
-            / 100
-        )
-
+    if voucher["type"] == "percent":
+        discount = amount * voucher["value"] / 100
     else:
-
-        discount = data["value"]
+        discount = voucher["value"]
 
     discount = min(
         discount,
-        data["max"],
-        subtotal,
+        voucher["max_discount"],
+        amount,
     )
 
     return (
         discount,
-        f"✓ Đã áp dụng {code}: giảm {money(discount)}",
+        f"Đã áp dụng {code}: giảm {money(discount)}.",
     )
 
 
-def get_points(total):
-    return int(total // 10000)
+def loyalty_points(amount):
+    return int(amount // 10000)
 
 
 # =========================================================
-# CHATBOT
+# 7. CHATBOT LOCAL
 # =========================================================
 
-def local_answer(question):
+def local_chatbot(question):
 
-    q = question.lower()
+    q = question.lower().strip()
 
-    if "best seller" in q or "bán chạy" in q:
-
-        names = [
+    if (
+        "best seller" in q
+        or "best-seller" in q
+        or "bán chạy" in q
+        or "bán chạy nhất" in q
+    ):
+        best_items = [
             item["name"]
             for item in MENU
             if item["best"]
@@ -334,125 +321,129 @@ def local_answer(question):
             "⭐ **Best seller của N2 Sushi:**\n\n"
             + "\n".join(
                 f"- {name}"
-                for name in names
+                for name in best_items
             )
         )
 
     if "2 người" in q:
-
         return (
-            "👫 **Combo dành cho 2 người**\n\n"
-            "Combo N2 Couple — **299.000đ**"
+            "👫 **Combo cho 2 người**\n\n"
+            "**Combo N2 Couple — 299.000đ**."
         )
 
     if "3 người" in q:
-
         return (
-            "👨‍👩‍👧 **Combo dành cho 3 người**\n\n"
-            "Combo N2 Family — **429.000đ**"
+            "👨‍👩‍👧 **Combo cho 3 người**\n\n"
+            "**Combo N2 Family — 429.000đ**."
         )
 
     if (
-        "4-5" in q
-        or "4 5" in q
+        "4-5 người" in q
+        or "4 5 người" in q
         or "4 người" in q
         or "5 người" in q
     ):
-
         return (
-            "👨‍👩‍👧‍👦 **Combo dành cho 4-5 người**\n\n"
-            "Combo N2 Party — **649.000đ**"
+            "👨‍👩‍👧‍👦 **Combo cho 4-5 người**\n\n"
+            "**Combo N2 Party — 649.000đ**."
         )
 
     if (
         "khuyến mãi" in q
         or "khuyen mai" in q
-        or "voucher" in q
         or "ưu đãi" in q
+        or "voucher" in q
     ):
-
         return (
-            "🎁 **Các ưu đãi hiện có:**\n\n"
-            "- N2WELCOME: giảm 10%, tối đa 100.000đ\n"
-            "- N2SAVE50: giảm 50.000đ\n"
-            "- N2VIP: giảm 15%, tối đa 150.000đ"
+            "🎁 **Khuyến mãi / Voucher hiện có:**\n\n"
+            "- **N2WELCOME:** giảm 10%, tối đa 100.000đ.\n"
+            "- **N2SAVE50:** giảm 50.000đ.\n"
+            "- **N2VIP:** giảm 15%, tối đa 150.000đ."
         )
 
     if (
         "địa chỉ" in q
         or "dia chi" in q
         or "ở đâu" in q
+        or "địa điểm" in q
     ):
-
         return (
-            f"📍 **Địa chỉ N2 Sushi:**\n\n"
-            f"{RESTAURANT['address']}"
+            "📍 **Địa chỉ N2 Sushi:**\n\n"
+            f"{RESTAURANT_ADDRESS}"
         )
 
     if (
-        "giờ" in q
-        or "gio" in q
+        "giờ mở cửa" in q
         or "mở cửa" in q
+        or "gio mo cua" in q
+        or "mấy giờ" in q
     ):
-
         return (
-            f"🕐 **Giờ mở cửa:**\n\n"
-            f"{RESTAURANT['hours']}"
+            "🕐 **Giờ mở cửa N2 Sushi:**\n\n"
+            f"{RESTAURANT_HOURS}"
+        )
+
+    if "số điện thoại" in q or "hotline" in q:
+        return (
+            "📞 **Hotline N2 Sushi:**\n\n"
+            f"{RESTAURANT_PHONE}"
         )
 
     return (
-        "Xin chào 👋 Mình là trợ lý N2 Sushi.\n\n"
-        "Bạn có thể hỏi mình về:\n"
-        "- Best seller\n"
-        "- Combo 2 / 3 / 4-5 người\n"
-        "- Khuyến mãi\n"
-        "- Voucher\n"
-        "- Địa chỉ\n"
-        "- Giờ mở cửa"
+        "Xin chào 👋 Mình là trợ lý của N2 Sushi.\n\n"
+        "Bạn có thể hỏi mình:\n\n"
+        "- ⭐ Best seller là gì?\n"
+        "- 👫 Combo cho 2 người?\n"
+        "- 👨‍👩‍👧 Combo cho 3 người?\n"
+        "- 👨‍👩‍👧‍👦 Combo cho 4-5 người?\n"
+        "- 🎁 Đang có khuyến mãi gì?\n"
+        "- 📍 Địa chỉ quán?\n"
+        "- 🕐 Giờ mở cửa?"
     )
 
 
-def ask_ai(question):
+# =========================================================
+# 8. CHATBOT AI
+# =========================================================
 
-    api_key = os.getenv(
-        "OPENROUTER_API_KEY",
-        ""
-    )
+def ask_chatbot(question):
+
+    api_key = os.getenv("OPENROUTER_API_KEY", "")
 
     if not api_key:
-        return local_answer(question)
+        return local_chatbot(question)
 
     menu_text = "\n".join(
-        f"- {item['name']}: {money(item['price'])}"
+        f"{item['name']}: {money(item['price'])}"
         for item in MENU
     )
 
-    prompt = f"""
-Bạn là chatbot chính thức của N2 Sushi.
+    system_prompt = f"""
+Bạn là trợ lý AI chính thức của N2 Sushi.
 
-Tên quán: N2 Sushi
-Địa chỉ: {RESTAURANT['address']}
-Giờ mở cửa: {RESTAURANT['hours']}
+Thông tin quán:
+Tên: N2 Sushi
+Địa chỉ: {RESTAURANT_ADDRESS}
+Điện thoại: {RESTAURANT_PHONE}
+Giờ mở cửa: {RESTAURANT_HOURS}
 
 MENU:
 {menu_text}
 
-Combo:
+COMBO:
 - Combo N2 Couple: 299.000đ - 2 người
 - Combo N2 Family: 429.000đ - 3 người
 - Combo N2 Party: 649.000đ - 4-5 người
 
-Voucher:
+VOUCHER:
 - N2WELCOME: giảm 10%, tối đa 100.000đ
 - N2SAVE50: giảm 50.000đ
 - N2VIP: giảm 15%, tối đa 150.000đ
 
-Hãy trả lời tiếng Việt.
-Không được tự bịa thông tin.
+Hãy trả lời bằng tiếng Việt.
 Trả lời ngắn gọn, thân thiện.
-
-Câu hỏi:
-{question}
+Không tự bịa thông tin.
+Nếu không biết thông tin thì nói khách liên hệ nhân viên N2 Sushi.
 """
 
     try:
@@ -467,26 +458,31 @@ Câu hỏi:
                 "model": "openai/gpt-4o-mini",
                 "messages": [
                     {
+                        "role": "system",
+                        "content": system_prompt,
+                    },
+                    {
                         "role": "user",
-                        "content": prompt,
-                    }
+                        "content": question,
+                    },
                 ],
                 "temperature": 0.2,
             },
             timeout=30,
         )
 
+        response.raise_for_status()
+
         data = response.json()
 
         return data["choices"][0]["message"]["content"]
 
     except Exception:
-
-        return local_answer(question)
+        return local_chatbot(question)
 
 
 # =========================================================
-# CSS
+# 9. CSS
 # =========================================================
 
 st.markdown(
@@ -497,7 +493,11 @@ st.markdown(
 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap'
 );
 
-* {
+/* ===== TOÀN APP ===== */
+
+html,
+body,
+[class*="css"] {
     font-family: 'Be Vietnam Pro', sans-serif;
 }
 
@@ -507,78 +507,91 @@ st.markdown(
             135deg,
             #fffaf7 0%,
             #ffffff 50%,
-            #fff6f1 100%
+            #fff6f2 100%
         );
 }
 
-section[data-testid="stSidebar"] {
-    background:
-        linear-gradient(
-            180deg,
-            #21120f,
-            #120b09
-        );
+/* ===== ẨN MENU STREAMLIT KHÔNG CẦN THIẾT ===== */
+
+#MainMenu {
+    visibility: hidden;
 }
 
-section[data-testid="stSidebar"] * {
-    color: #fff !important;
+footer {
+    visibility: hidden;
 }
+
+/* ===== HEADER ===== */
 
 .hero {
     background:
         linear-gradient(
             135deg,
-            #270b08,
-            #8f1717,
-            #c72d2d
+            #260806,
+            #8e1717,
+            #c82d2d
         );
+
     border-radius: 28px;
+
     padding: 38px 42px;
+
     color: white;
+
     box-shadow:
-        0 18px 45px rgba(90,20,10,.20);
-    margin-bottom: 22px;
+        0 18px 45px rgba(100, 20, 10, 0.20);
+
+    margin-bottom: 20px;
 }
 
 .hero-small {
     font-size: 11px;
     letter-spacing: 4px;
-    opacity: .7;
+    opacity: 0.70;
 }
 
 .hero-title {
     font-size: 48px;
     font-weight: 800;
-    margin: 5px 0;
+    line-height: 1.15;
+    margin-top: 5px;
 }
 
 .hero-subtitle {
     font-size: 14px;
-    opacity: .82;
+    opacity: 0.82;
+    margin-top: 8px;
 }
 
+/* ===== INFO CARD ===== */
+
 .info-box {
-    background: white;
-    border: 1px solid #f0e0da;
+    background: #ffffff;
+    border: 1px solid #eee0da;
     border-radius: 18px;
     padding: 18px;
+
     box-shadow:
-        0 7px 25px rgba(70,20,10,.05);
+        0 7px 25px rgba(70, 20, 10, 0.05);
+
+    min-height: 105px;
 }
 
 .info-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #9c8982;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    color: #a08d86;
+    font-weight: 700;
 }
 
 .info-value {
     color: #32130f;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 800;
     margin-top: 5px;
 }
+
+/* ===== SECTION ===== */
 
 .section-title {
     color: #35130f;
@@ -587,21 +600,37 @@ section[data-testid="stSidebar"] * {
     margin: 25px 0 15px;
 }
 
+/* ===== FOOD CARD ===== */
+
 .food-card {
-    background: white;
+    background: #ffffff;
+
     border: 1px solid #eee0da;
+
     border-radius: 20px;
+
     padding: 20px;
-    margin-bottom: 15px;
-    min-height: 225px;
+
+    margin-bottom: 12px;
+
+    min-height: 215px;
+
     box-shadow:
-        0 8px 25px rgba(80,20,10,.055);
+        0 8px 25px rgba(80, 20, 10, 0.055);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .food-card:hover {
-    border-color: #d99a8d;
+    transform: translateY(-2px);
+
+    border-color: #d49a8d;
+
     box-shadow:
-        0 12px 30px rgba(120,30,15,.10);
+        0 12px 30px rgba(120, 30, 15, 0.12);
 }
 
 .food-name {
@@ -613,7 +642,7 @@ section[data-testid="stSidebar"] * {
 .food-description {
     color: #95817a;
     font-size: 12px;
-    min-height: 37px;
+    min-height: 38px;
     margin-top: 7px;
 }
 
@@ -626,52 +655,129 @@ section[data-testid="stSidebar"] * {
 
 .best {
     display: inline-block;
+
     background: #fff1d5;
     color: #956000;
+
     padding: 5px 9px;
+
     border-radius: 50px;
+
     font-size: 10px;
     font-weight: 800;
 }
 
 .category {
     display: inline-block;
+
     background: #fff4ef;
     color: #9a3329;
+
     padding: 5px 9px;
+
     border-radius: 50px;
+
     font-size: 10px;
 }
 
+/* ===== BUTTON ===== */
+
+.stButton > button {
+    border-radius: 12px !important;
+
+    min-height: 42px;
+
+    font-weight: 700 !important;
+
+    border: 1px solid #eadbd5 !important;
+
+    background: #ffffff !important;
+
+    color: #5c2920 !important;
+
+    transition: all 0.15s ease;
+}
+
+.stButton > button:hover {
+    border-color: #bd3830 !important;
+
+    color: #9b1717 !important;
+
+    background: #fff8f5 !important;
+}
+
+/* PRIMARY */
+
+.stButton > button[kind="primary"] {
+    background:
+        linear-gradient(
+            135deg,
+            #951414,
+            #ce2e2e
+        ) !important;
+
+    border: none !important;
+
+    color: #ffffff !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+    color: #ffffff !important;
+
+    transform: translateY(-1px);
+}
+
+/* ===== INPUT ===== */
+
+div[data-testid="stTextInput"] input {
+    border-radius: 12px !important;
+
+    border: 1px solid #eadbd5 !important;
+
+    color: #32130f !important;
+
+    background: #ffffff !important;
+}
+
+div[data-testid="stTextInput"] input::placeholder {
+    color: #a18d86 !important;
+}
+
+/* ===== CART ===== */
+
 .cart-card {
-    background: white;
+    background: #ffffff;
+
     border: 1px solid #eee0da;
+
     border-radius: 22px;
+
     padding: 22px;
+
     box-shadow:
-        0 10px 35px rgba(80,20,10,.07);
+        0 10px 35px rgba(80, 20, 10, 0.07);
 }
 
 .cart-item {
     padding: 14px 0;
-    border-bottom: 1px solid #eee5e1;
+
+    border-bottom:
+        1px solid #eee5e1;
 }
 
 .cart-name {
     color: #35130f;
+
     font-weight: 800;
 }
 
 .cart-price {
     color: #b21c1c;
+
     font-weight: 800;
 }
 
-.qty-box {
-    background: #fff5f1;
-    border-radius: 12px;
-    padding: 3px;
-}
+/* ===== TOTAL ===== */
 
 .total-card {
     background:
@@ -680,57 +786,167 @@ section[data-testid="stSidebar"] * {
             #8d1111,
             #c62929
         );
+
     color: white;
+
     border-radius: 22px;
+
     padding: 25px;
+
     margin-top: 18px;
+
     box-shadow:
-        0 15px 35px rgba(140,20,20,.23);
+        0 15px 35px rgba(140, 20, 20, 0.23);
 }
 
 .total-label {
-    font-size: 11px;
+    font-size: 10px;
+
     text-transform: uppercase;
+
     letter-spacing: 1.5px;
-    opacity: .7;
+
+    opacity: 0.72;
 }
 
 .total-number {
-    font-size: 36px;
+    font-size: 34px;
+
     font-weight: 800;
+
     margin-top: 4px;
 }
 
-.stButton > button {
-    border-radius: 12px !important;
-    font-weight: 700 !important;
-    border: 1px solid #eadbd5 !important;
+/* =================================================
+   SIDEBAR CHATBOT
+   ================================================= */
+
+section[data-testid="stSidebar"] {
+    background:
+        linear-gradient(
+            180deg,
+            #21120f 0%,
+            #130a08 100%
+        );
 }
 
-.stButton > button:hover {
-    border-color: #bd3830 !important;
+/* Không ép input thành chữ trắng */
+
+section[data-testid="stSidebar"] label {
+    color: #ffffff !important;
 }
 
-button[kind="primary"] {
+/* Text bên ngoài */
+
+section[data-testid="stSidebar"] {
+    color: #ffffff;
+}
+
+/* Ô nhập chatbot */
+
+section[data-testid="stSidebar"] input {
+    background: #ffffff !important;
+
+    color: #21120f !important;
+
+    caret-color: #a71919 !important;
+
+    border:
+        2px solid #d9b9ae !important;
+
+    border-radius: 14px !important;
+
+    padding: 10px 13px !important;
+
+    font-size: 13px !important;
+}
+
+section[data-testid="stSidebar"] input:focus {
+    border-color: #d13a32 !important;
+
+    box-shadow:
+        0 0 0 2px rgba(209, 58, 50, 0.18) !important;
+}
+
+section[data-testid="stSidebar"] input::placeholder {
+    color: #9b8580 !important;
+
+    opacity: 1 !important;
+}
+
+/* Chatbot message */
+
+.chat-user {
     background:
         linear-gradient(
             135deg,
-            #991414,
-            #cf2e2e
-        ) !important;
-    border: none !important;
-    color: white !important;
+            #a51c1c,
+            #c52a2a
+        );
+
+    color: #ffffff;
+
+    padding: 11px 13px;
+
+    border-radius:
+        15px 15px 4px 15px;
+
+    margin:
+        8px 0 8px 20px;
+
+    font-size: 12px;
+
+    line-height: 1.55;
 }
 
-div[data-testid="stTextInput"] input {
-    border-radius: 12px;
+.chat-bot {
+    background: #3a2723;
+
+    color: #ffffff;
+
+    padding: 11px 13px;
+
+    border-radius:
+        15px 15px 15px 4px;
+
+    margin:
+        8px 20px 8px 0;
+
+    font-size: 12px;
+
+    line-height: 1.55;
+
+    border: 1px solid #513832;
 }
+
+/* Sidebar button */
+
+section[data-testid="stSidebar"] .stButton > button {
+    background: #3a2723 !important;
+
+    color: #ffffff !important;
+
+    border:
+        1px solid #5a3d36 !important;
+}
+
+section[data-testid="stSidebar"] .stButton > button:hover {
+    background: #51342e !important;
+
+    color: #ffffff !important;
+}
+
+/* ===== FOOTER ===== */
 
 .footer {
     text-align: center;
+
     color: #a18d86;
+
     font-size: 11px;
-    padding: 35px 0 15px;
+
+    padding:
+        35px 0 15px;
 }
 
 </style>
@@ -740,7 +956,7 @@ div[data-testid="stTextInput"] input {
 
 
 # =========================================================
-# HEADER
+# 10. HEADER
 # =========================================================
 
 st.markdown(
@@ -752,7 +968,7 @@ st.markdown(
     </div>
 
     <div class="hero-title">
-        N2 Sushi
+        🍣 N2 Sushi
     </div>
 
     <div class="hero-subtitle">
@@ -766,7 +982,7 @@ st.markdown(
 
 
 # =========================================================
-# ẢNH QUÁN
+# 11. ẢNH QUÁN
 # =========================================================
 
 if os.path.exists("sushi.jpg"):
@@ -782,24 +998,24 @@ if os.path.exists("sushi.jpg"):
             width="stretch",
         )
 
-
 else:
 
     st.warning(
-        "Chưa tìm thấy sushi.jpg. "
-        "Hãy đặt file sushi.jpg cùng thư mục với app.py."
+        "Không tìm thấy sushi.jpg. "
+        "Hãy đặt sushi.jpg cùng thư mục với app.py."
     )
 
 
 # =========================================================
-# THÔNG TIN NHANH
+# 12. THÔNG TIN NHANH
 # =========================================================
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-i1, i2, i3, i4 = st.columns(4)
+info1, info2, info3, info4 = st.columns(4)
 
-with i1:
+
+with info1:
 
     st.markdown(
         f"""
@@ -818,7 +1034,7 @@ font-size:11px;
 color:#8f7b74;
 margin-top:5px;
 ">
-{RESTAURANT['address']}
+{RESTAURANT_ADDRESS}
 </div>
 
 </div>
@@ -826,7 +1042,8 @@ margin-top:5px;
         unsafe_allow_html=True,
     )
 
-with i2:
+
+with info2:
 
     st.markdown(
         f"""
@@ -853,7 +1070,8 @@ Hàng ngày
         unsafe_allow_html=True,
     )
 
-with i3:
+
+with info3:
 
     st.markdown(
         """
@@ -880,7 +1098,8 @@ Món được yêu thích
         unsafe_allow_html=True,
     )
 
-with i4:
+
+with info4:
 
     st.markdown(
         """
@@ -909,7 +1128,7 @@ Dành cho khách hàng
 
 
 # =========================================================
-# SIDEBAR CHATBOT
+# 13. CHATBOT SIDEBAR
 # =========================================================
 
 with st.sidebar:
@@ -918,7 +1137,7 @@ with st.sidebar:
         """
 <div style="
 text-align:center;
-padding:10px 0 20px;
+padding:10px 0 18px;
 ">
 
 <div style="
@@ -930,13 +1149,15 @@ font-size:42px;
 <div style="
 font-size:23px;
 font-weight:800;
+color:#ffffff;
 ">
 N2 Assistant
 </div>
 
 <div style="
 font-size:11px;
-opacity:.65;
+color:#c9aaa1;
+margin-top:4px;
 ">
 Trợ lý N2 Sushi
 </div>
@@ -948,21 +1169,22 @@ Trợ lý N2 Sushi
 
     st.divider()
 
-    for message in st.session_state.chat:
+    # Tin nhắn cũ
+
+    for message in st.session_state.chat_messages:
 
         if message["role"] == "user":
 
             st.markdown(
                 f"""
-<div style="
-background:#a31c1c;
-padding:10px 12px;
-border-radius:14px;
-margin:8px 0;
-font-size:13px;
-">
-<b>Bạn</b><br>
+<div class="chat-user">
+
+<b>Bạn</b>
+
+<br>
+
 {message["content"]}
+
 </div>
 """,
                 unsafe_allow_html=True,
@@ -970,38 +1192,50 @@ font-size:13px;
 
         else:
 
+            content = message["content"]
+
+            content = content.replace(
+                "\n",
+                "<br>",
+            )
+
             st.markdown(
                 f"""
-<div style="
-background:#3a2521;
-padding:10px 12px;
-border-radius:14px;
-margin:8px 0;
-font-size:13px;
-">
-<b>🍣 N2</b><br>
-{message["content"]}
+<div class="chat-bot">
+
+<b>🍣 N2 Sushi</b>
+
+<br>
+
+{content}
+
 </div>
 """,
                 unsafe_allow_html=True,
             )
 
-    chat = st.chat_input(
+
+    # Input chatbot
+
+    user_question = st.chat_input(
         "Hỏi N2 Sushi..."
     )
 
-    if chat:
 
-        st.session_state.chat.append(
+    if user_question:
+
+        st.session_state.chat_messages.append(
             {
                 "role": "user",
-                "content": chat,
+                "content": user_question,
             }
         )
 
-        answer = ask_ai(chat)
+        answer = ask_chatbot(
+            user_question
+        )
 
-        st.session_state.chat.append(
+        st.session_state.chat_messages.append(
             {
                 "role": "assistant",
                 "content": answer,
@@ -1010,18 +1244,19 @@ font-size:13px;
 
         st.rerun()
 
+
     if st.button(
-        "🗑️ Xóa chat",
+        "🗑️ Xóa cuộc trò chuyện",
         use_container_width=True,
     ):
 
-        st.session_state.chat = []
+        st.session_state.chat_messages = []
 
         st.rerun()
 
 
 # =========================================================
-# THÔNG TIN KHÁCH
+# 14. THÔNG TIN KHÁCH HÀNG
 # =========================================================
 
 st.markdown(
@@ -1031,47 +1266,50 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-customer_col1, customer_col2, customer_col3 = st.columns(
+customer1, customer2, customer3 = st.columns(
     [1, 1.5, 1.5]
 )
 
-with customer_col1:
+
+with customer1:
 
     table_number = st.text_input(
         "🪑 Số bàn",
         placeholder="VD: B12",
     )
 
-with customer_col2:
+
+with customer2:
 
     customer_name = st.text_input(
         "👤 Tên khách hàng",
         placeholder="Nguyễn Văn A",
     )
 
-with customer_col3:
 
-    phone = st.text_input(
+with customer3:
+
+    customer_phone = st.text_input(
         "📱 Số điện thoại tích điểm",
         placeholder="0901234567",
     )
 
 
 # =========================================================
-# MENU + CART
+# 15. MENU + GIỎ HÀNG
 # =========================================================
 
-menu_col, cart_col = st.columns(
+menu_column, cart_column = st.columns(
     [1.7, 1],
     gap="large",
 )
 
 
 # =========================================================
-# MENU
+# 16. MENU
 # =========================================================
 
-with menu_col:
+with menu_column:
 
     st.markdown(
         '<div class="section-title">'
@@ -1080,11 +1318,12 @@ with menu_col:
         unsafe_allow_html=True,
     )
 
-    filter_col, search_col = st.columns(
+    filter1, filter2 = st.columns(
         [1, 2]
     )
 
-    with filter_col:
+
+    with filter1:
 
         category = st.selectbox(
             "Danh mục",
@@ -1099,15 +1338,17 @@ with menu_col:
             ],
         )
 
-    with search_col:
+
+    with filter2:
 
         search = st.text_input(
             "🔎 Tìm món",
-            placeholder="Tìm sushi, sashimi, combo...",
+            placeholder="Nhập tên món...",
         )
 
 
     filtered_menu = MENU.copy()
+
 
     if category != "Tất cả":
 
@@ -1117,7 +1358,8 @@ with menu_col:
             if item["category"] == category
         ]
 
-    if search:
+
+    if search.strip():
 
         filtered_menu = [
             item
@@ -1127,29 +1369,29 @@ with menu_col:
         ]
 
 
-    # 2 CỘT MÓN
-
     food_columns = st.columns(2)
+
 
     for index, item in enumerate(filtered_menu):
 
         with food_columns[index % 2]:
 
-            best_html = ""
+            best_badge = ""
 
             if item["best"]:
 
-                best_html = (
+                best_badge = (
                     '<span class="best">'
                     "⭐ BEST SELLER"
                     "</span>"
                 )
 
+
             st.markdown(
                 f"""
 <div class="food-card">
 
-{best_html}
+{best_badge}
 
 <div style="height:8px;"></div>
 
@@ -1158,7 +1400,7 @@ with menu_col:
 </div>
 
 <div class="food-description">
-{item['desc']}
+{item['description']}
 </div>
 
 <span class="category">
@@ -1175,14 +1417,17 @@ with menu_col:
             )
 
 
-            # NÚT THÊM
-
-            current_qty = st.session_state.cart.get(
-                item["id"],
-                0,
+            current_quantity = (
+                st.session_state.cart.get(
+                    item["id"],
+                    0,
+                )
             )
 
-            if current_qty == 0:
+
+            # Chưa chọn món
+
+            if current_quantity == 0:
 
                 if st.button(
                     "＋  Thêm món",
@@ -1190,17 +1435,23 @@ with menu_col:
                     use_container_width=True,
                 ):
 
-                    add_item(item["id"])
+                    add_item(
+                        item["id"]
+                    )
 
                     st.rerun()
 
+
+            # Đã chọn món
+
             else:
 
-                minus, quantity, plus = st.columns(
+                minus_col, qty_col, plus_col = st.columns(
                     [1, 1.2, 1]
                 )
 
-                with minus:
+
+                with minus_col:
 
                     if st.button(
                         "−",
@@ -1208,11 +1459,14 @@ with menu_col:
                         use_container_width=True,
                     ):
 
-                        remove_item(item["id"])
+                        remove_item(
+                            item["id"]
+                        )
 
                         st.rerun()
 
-                with quantity:
+
+                with qty_col:
 
                     st.markdown(
                         f"""
@@ -1220,7 +1474,7 @@ with menu_col:
 background:#fff3ef;
 border:1px solid #efd7d0;
 border-radius:11px;
-height:43px;
+height:42px;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -1228,13 +1482,14 @@ font-size:16px;
 font-weight:800;
 color:#8f1717;
 ">
-{current_qty}
+{current_quantity}
 </div>
 """,
                         unsafe_allow_html=True,
                     )
 
-                with plus:
+
+                with plus_col:
 
                     if st.button(
                         "＋",
@@ -1242,36 +1497,42 @@ color:#8f1717;
                         use_container_width=True,
                     ):
 
-                        add_item(item["id"])
+                        add_item(
+                            item["id"]
+                        )
 
                         st.rerun()
 
 
-            # GHI CHÚ
+                # Ghi chú
 
-            if current_qty > 0:
+                note_key = f"note_{item['id']}"
 
-                note_value = st.session_state.notes.get(
-                    item["id"],
-                    "",
+                current_note = (
+                    st.session_state.notes.get(
+                        item["id"],
+                        "",
+                    )
                 )
 
                 note = st.text_input(
-                    "📝 Ghi chú",
-                    value=note_value,
+                    "Ghi chú",
+                    value=current_note,
                     placeholder="Ít wasabi, không hành...",
-                    key=f"note_{item['id']}",
+                    key=note_key,
                     label_visibility="collapsed",
                 )
 
-                st.session_state.notes[item["id"]] = note
+                st.session_state.notes[
+                    item["id"]
+                ] = note
 
 
 # =========================================================
-# CART
+# 17. GIỎ HÀNG
 # =========================================================
 
-with cart_col:
+with cart_column:
 
     st.markdown(
         '<div class="section-title">'
@@ -1284,6 +1545,7 @@ with cart_col:
         '<div class="cart-card">',
         unsafe_allow_html=True,
     )
+
 
     if not st.session_state.cart:
 
@@ -1320,6 +1582,7 @@ Chọn món bên trái để bắt đầu order
 """,
             unsafe_allow_html=True,
         )
+
 
     else:
 
@@ -1375,19 +1638,22 @@ margin-top:3px;
         st.markdown("<br>", unsafe_allow_html=True)
 
 
-        # VOUCHER
+        # Voucher
 
-        voucher = st.text_input(
+        voucher_code = st.text_input(
             "🎟️ Voucher",
             placeholder="VD: N2WELCOME",
         )
 
-        subtotal = get_subtotal()
 
-        discount, voucher_message = calculate_discount(
-            subtotal,
-            voucher,
+        current_subtotal = subtotal()
+
+
+        discount, voucher_message = calculate_voucher(
+            voucher_code,
+            current_subtotal,
         )
+
 
         if voucher_message:
 
@@ -1403,15 +1669,17 @@ margin-top:3px;
                     voucher_message
                 )
 
+
         total = max(
             0,
-            subtotal - discount,
+            current_subtotal - discount,
         )
 
-        points = get_points(total)
+
+        points = loyalty_points(total)
 
 
-        # SUMMARY
+        # Tổng tiền
 
         st.markdown(
             f"""
@@ -1426,7 +1694,7 @@ font-size:13px;
 <span>Tạm tính</span>
 
 <b>
-{money(subtotal)}
+{money(current_subtotal)}
 </b>
 
 </div>
@@ -1481,10 +1749,10 @@ TỔNG THANH TOÁN
 
 <div style="
 font-size:11px;
-opacity:.7;
+opacity:.72;
 margin-top:5px;
 ">
-Đã bao gồm ưu đãi nếu có
+Đã áp dụng ưu đãi nếu có
 </div>
 
 </div>
@@ -1501,7 +1769,9 @@ margin-top:5px;
             use_container_width=True,
         ):
 
-            clear_cart()
+            st.session_state.cart = {}
+
+            st.session_state.notes = {}
 
             st.rerun()
 
@@ -1514,11 +1784,13 @@ margin-top:5px;
 
             errors = []
 
+
             if not table_number.strip():
 
                 errors.append(
                     "Vui lòng nhập số bàn."
                 )
+
 
             if not customer_name.strip():
 
@@ -1526,11 +1798,13 @@ margin-top:5px;
                     "Vui lòng nhập tên khách hàng."
                 )
 
+
             if not st.session_state.cart:
 
                 errors.append(
                     "Chưa có món trong đơn hàng."
                 )
+
 
             if errors:
 
@@ -1538,9 +1812,11 @@ margin-top:5px;
 
                     st.error(error)
 
+
             else:
 
                 invoice_items = []
+
 
                 for item_id, quantity in (
                     st.session_state.cart.items()
@@ -1565,26 +1841,30 @@ margin-top:5px;
                     )
 
 
+                invoice_number = (
+                    "N2-"
+                    + datetime.now().strftime(
+                        "%Y%m%d-%H%M%S"
+                    )
+                    + "-"
+                    + str(uuid.uuid4())[:4].upper()
+                )
+
+
                 st.session_state.invoice = {
-                    "number": (
-                        "N2-"
-                        + datetime.now().strftime(
-                            "%Y%m%d-%H%M%S"
-                        )
-                        + "-"
-                        + str(uuid.uuid4())[:4].upper()
-                    ),
+                    "number": invoice_number,
                     "time": datetime.now(),
                     "table": table_number,
                     "customer": customer_name,
-                    "phone": phone,
+                    "phone": customer_phone,
                     "items": invoice_items,
-                    "subtotal": subtotal,
+                    "subtotal": current_subtotal,
                     "discount": discount,
                     "total": total,
-                    "voucher": voucher.upper(),
+                    "voucher": voucher_code.upper(),
                     "points": points,
                 }
+
 
                 st.success(
                     "🎉 Thanh toán thành công!"
@@ -1600,10 +1880,11 @@ margin-top:5px;
 
 
 # =========================================================
-# HÓA ĐƠN
+# 18. HÓA ĐƠN
 # =========================================================
 
 invoice = st.session_state.invoice
+
 
 if invoice:
 
@@ -1614,9 +1895,11 @@ if invoice:
         unsafe_allow_html=True,
     )
 
+
     invoice_left, invoice_right = st.columns(
         [1.5, 1]
     )
+
 
     with invoice_left:
 
@@ -1628,29 +1911,33 @@ if invoice:
 color:#a51616;
 margin-top:0;
 ">
-N2 SUSHI
+🍣 N2 SUSHI
 </h3>
 
 <div style="
 font-size:12px;
 color:#75615a;
-line-height:1.8;
+line-height:1.9;
 ">
 
 <b>Mã hóa đơn:</b>
 {invoice['number']}
+
 <br>
 
 <b>Thời gian:</b>
 {invoice['time'].strftime('%d/%m/%Y %H:%M:%S')}
+
 <br>
 
 <b>Số bàn:</b>
 {invoice['table']}
+
 <br>
 
 <b>Khách hàng:</b>
 {invoice['customer']}
+
 <br>
 
 <b>Số điện thoại:</b>
@@ -1659,12 +1946,29 @@ line-height:1.8;
 </div>
 
 <hr>
-
 """,
             unsafe_allow_html=True,
         )
 
+
         for item in invoice["items"]:
+
+            note_html = ""
+
+            if item["note"]:
+
+                note_html = (
+                    f"""
+                    <div style="
+                    font-size:10px;
+                    color:#9a8780;
+                    margin-top:3px;
+                    ">
+                    📝 {item['note']}
+                    </div>
+                    """
+                )
+
 
             st.markdown(
                 f"""
@@ -1676,7 +1980,10 @@ border-bottom:1px solid #eee;
 ">
 
 <div>
-<b>{item['name']}</b>
+
+<b>
+{item['name']}
+</b>
 
 <div style="
 font-size:11px;
@@ -1684,6 +1991,8 @@ color:#8f7c75;
 ">
 SL: {item['quantity']}
 </div>
+
+{note_html}
 
 </div>
 
@@ -1698,6 +2007,7 @@ color:#a71919;
 """,
                 unsafe_allow_html=True,
             )
+
 
         st.markdown(
             "</div>",
@@ -1722,7 +2032,8 @@ TỔNG THANH TOÁN
 <div style="
 margin-top:15px;
 font-size:13px;
-opacity:.85;
+line-height:1.8;
+opacity:.88;
 ">
 
 Tạm tính:
@@ -1745,22 +2056,28 @@ Voucher:
             unsafe_allow_html=True,
         )
 
+
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Xuất CSV thay vì bảng code/PDF bắt buộc
+
+        # Tạo file hóa đơn CSV
 
         csv_text = (
             "N2 Sushi\n"
             f"Hóa đơn: {invoice['number']}\n"
             f"Khách hàng: {invoice['customer']}\n"
-            f"Bàn: {invoice['table']}\n"
+            f"Số bàn: {invoice['table']}\n"
+            f"Số điện thoại: {invoice['phone']}\n"
             f"Thời gian: "
             f"{invoice['time'].strftime('%d/%m/%Y %H:%M:%S')}\n\n"
         )
 
+
         csv_text += (
-            "Món,Số lượng,Đơn giá,Thành tiền,Ghi chú\n"
+            "Món,Số lượng,Đơn giá,"
+            "Thành tiền,Ghi chú\n"
         )
+
 
         for item in invoice["items"]:
 
@@ -1772,6 +2089,7 @@ Voucher:
                 f"\"{item['note']}\"\n"
             )
 
+
         csv_text += (
             f"\nTạm tính,{invoice['subtotal']}\n"
             f"Giảm voucher,{invoice['discount']}\n"
@@ -1779,8 +2097,9 @@ Voucher:
             f"Điểm tích lũy,{invoice['points']}\n"
         )
 
+
         st.download_button(
-            "📥 Tải hóa đơn",
+            "📥 TẢI HÓA ĐƠN",
             data=csv_text.encode("utf-8-sig"),
             file_name=f"{invoice['number']}.csv",
             mime="text/csv",
@@ -1789,15 +2108,19 @@ Voucher:
 
 
 # =========================================================
-# FOOTER
+# 19. FOOTER
 # =========================================================
 
 st.markdown(
     """
 <div class="footer">
-🍣 N2 Sushi • Japanese Premium Dining
+
+🍣 N2 Sushi
+
 <br>
-Order & Payment System
+
+Premium Japanese Dining • Order & Payment System
+
 </div>
 """,
     unsafe_allow_html=True,
