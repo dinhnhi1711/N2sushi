@@ -27,7 +27,6 @@ try:
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
-  st.image("sushi.jpg")
 
 
 # ============================================================
