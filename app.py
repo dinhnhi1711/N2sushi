@@ -858,35 +858,34 @@ section[data-testid="stSidebar"] {
     color: #ffffff;
 }
 
-/* Ô nhập chatbot */
+/* ===== Ô NHẬP CHATBOT ===== */
 
-section[data-testid="stSidebar"] input {
+/* Streamlit chat_input dùng textarea nên phải target textarea */
+section[data-testid="stSidebar"] div[data-testid="stChatInput"] textarea,
+section[data-testid="stSidebar"] textarea,
+section[data-testid="stSidebar"] [contenteditable="true"] {
     background: #ffffff !important;
-
-    color: #21120f !important;
-
-    caret-color: #a71919 !important;
-
-    border:
-        2px solid #d9b9ae !important;
-
+    color: #b31d1d !important;
+    -webkit-text-fill-color: #b31d1d !important;
+    caret-color: #b31d1d !important;
+    border: 2px solid #d9b9ae !important;
     border-radius: 14px !important;
-
-    padding: 10px 13px !important;
-
     font-size: 13px !important;
 }
 
-section[data-testid="stSidebar"] input:focus {
+section[data-testid="stSidebar"] div[data-testid="stChatInput"] textarea:focus,
+section[data-testid="stSidebar"] textarea:focus {
+    background: #ffffff !important;
+    color: #b31d1d !important;
+    -webkit-text-fill-color: #b31d1d !important;
     border-color: #d13a32 !important;
-
-    box-shadow:
-        0 0 0 2px rgba(209, 58, 50, 0.18) !important;
+    box-shadow: 0 0 0 2px rgba(209, 58, 50, 0.18) !important;
 }
 
-section[data-testid="stSidebar"] input::placeholder {
-    color: #9b8580 !important;
-
+section[data-testid="stSidebar"] div[data-testid="stChatInput"] textarea::placeholder,
+section[data-testid="stSidebar"] textarea::placeholder {
+    color: #a18d86 !important;
+    -webkit-text-fill-color: #a18d86 !important;
     opacity: 1 !important;
 }
 
