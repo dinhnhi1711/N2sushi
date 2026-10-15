@@ -1,1499 +1,1607 @@
-import os
-import textwrap
-import uuid
-import sqlite3
-import unicodedata
-import html
-from datetime import datetime
 
-import requests
+
 import streamlit as st
-
-
-# =========================================================
-# HÀM RENDER HTML AN TOÀN
-# =========================================================
-
-def clean_html(content):
-    return "\n".join(line.lstrip() for line in content.splitlines())
-
-
-def html_markdown(content, *args, **kwargs):
-    return st.markdown(clean_html(content), *args, **kwargs)
-
+import sqlite3
+import pandas as pd
+import html
+import io
+import os
+import uuid
+import random
+import string
+from datetime import datetime
+from pathlib import Path
 
 # =========================================================
-# 1. CẤU HÌNH TRANG
+# 1. CẤU HÌNH APP
 # =========================================================
 
 st.set_page_config(
-    page_title="N2 Sushi",
+    page_title="N2 Sushi | POS",
     page_icon="🍣",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
 )
 
+DB_PATH = "n2_sushi.db"
+
+# Sửa thông tin này thành thông tin thật của quán
+SHOP_NAME = "N2 Sushi"
+SHOP_ADDRESS = "123 Đường ABC, TP. Thủ Dầu Một, Bình Dương"
+SHOP_PHONE = "0900 123 456"
+SHOP_HOURS = "09:00 - 22:00 hằng ngày"
+
+# Ảnh banner sushi. Có thể thay bằng đường dẫn ảnh của quán.
+BANNER_URL = (
+    "https://images.unsplash.com/"
+    "photo-1579871494447-9811cf80d66c"
+    "?auto=format&fit=crop&w=1800&q=85"
+)
 
 # =========================================================
-# 2. THÔNG TIN QUÁN
+# 2. GIAO DIỆN
 # =========================================================
 
-RESTAURANT_NAME = "N2 Sushi"
-RESTAURANT_ADDRESS = "Số 8 đường Nguyễn Huệ Thành Phố Hồ Chí Minh"
-RESTAURANT_PHONE = "0900 000 000"
-RESTAURANT_HOURS = "10:00 - 22:00 hàng ngày"
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
-
-# =========================================================
-# 3. MENU
-# =========================================================
-
-MENU = [
-    {
-        "id": "S01",
-        "name": "Sushi cá hồi",
-        "category": "Sushi",
-        "price": 69000,
-        "description": "Cá hồi tươi cùng cơm sushi Nhật",
-        "best": True,
-    },
-    {
-        "id": "S02",
-        "name": "Sushi cá ngừ",
-        "category": "Sushi",
-        "price": 65000,
-        "description": "Cá ngừ tươi cùng cơm sushi",
-        "best": True,
-    },
-    {
-        "id": "S03",
-        "name": "Sashimi cá hồi",
-        "category": "Sashimi",
-        "price": 129000,
-        "description": "Cá hồi tươi cắt lát kiểu Nhật",
-        "best": True,
-    },
-    {
-        "id": "S04",
-        "name": "Sashimi tổng hợp",
-        "category": "Sashimi",
-        "price": 229000,
-        "description": "Tổng hợp nhiều loại sashimi",
-        "best": True,
-    },
-    {
-        "id": "S05",
-        "name": "Maki cá hồi bơ",
-        "category": "Maki",
-        "price": 89000,
-        "description": "Cá hồi, bơ và rong biển",
-        "best": True,
-    },
-    {
-        "id": "S06",
-        "name": "Maki tempura tôm",
-        "category": "Maki",
-        "price": 99000,
-        "description": "Tôm tempura cuộn maki",
-        "best": False,
-    },
-    {
-        "id": "S07",
-        "name": "Salmon Aburi",
-        "category": "Sushi",
-        "price": 109000,
-        "description": "Cá hồi áp lửa kiểu Nhật",
-        "best": True,
-    },
-    {
-        "id": "S08",
-        "name": "Unagi Sushi",
-        "category": "Sushi",
-        "price": 119000,
-        "description": "Sushi lươn Nhật",
-        "best": False,
-    },
-    {
-        "id": "S09",
-        "name": "Gyoza",
-        "category": "Món ăn",
-        "price": 79000,
-        "description": "Bánh xếp Nhật",
-        "best": False,
-    },
-    {
-        "id": "S10",
-        "name": "Edamame",
-        "category": "Món ăn",
-        "price": 49000,
-        "description": "Đậu nành Nhật",
-        "best": False,
-    },
-    {
-        "id": "C02",
-        "name": "Combo N2 Couple",
-        "category": "Combo",
-        "price": 299000,
-        "description": "Combo dành cho 2 người",
-        "best": True,
-    },
-    {
-        "id": "C03",
-        "name": "Combo N2 Family",
-        "category": "Combo",
-        "price": 429000,
-        "description": "Combo dành cho 3 người",
-        "best": True,
-    },
-    {
-        "id": "C45",
-        "name": "Combo N2 Party",
-        "category": "Combo",
-        "price": 649000,
-        "description": "Combo dành cho 4-5 người",
-        "best": True,
-    },
-    {
-        "id": "D01",
-        "name": "Coca-Cola",
-        "category": "Nước uống",
-        "price": 25000,
-        "description": "Nước ngọt Coca-Cola",
-        "best": False,
-    },
-    {
-        "id": "D02",
-        "name": "Sprite",
-        "category": "Nước uống",
-        "price": 25000,
-        "description": "Nước ngọt Sprite",
-        "best": False,
-    },
-    {
-        "id": "D03",
-        "name": "Trà đào",
-        "category": "Nước uống",
-        "price": 45000,
-        "description": "Trà đào mát lạnh",
-        "best": True,
-    },
-    {
-        "id": "D04",
-        "name": "Trà xanh Nhật",
-        "category": "Nước uống",
-        "price": 35000,
-        "description": "Trà xanh Nhật",
-        "best": False,
-    },
-]
-
-MENU_BY_ID = {
-    item["id"]: item
-    for item in MENU
+html, body, [class*="css"] {
+    font-family: 'Be Vietnam Pro', sans-serif;
 }
 
+.stApp {
+    background: #f7f5f0;
+    color: #222222;
+}
+
+header[data-testid="stHeader"] {
+    background: transparent;
+}
+
+section[data-testid="stSidebar"] {
+    background: #171717;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #f5f0e8;
+}
+
+.hero {
+    padding: 28px;
+    border-radius: 18px;
+    background: linear-gradient(
+        110deg,
+        rgba(15,15,15,0.96),
+        rgba(80,20,30,0.86)
+    );
+    color: #fff8ed;
+    margin-bottom: 20px;
+}
+
+.hero h1 {
+    font-size: 38px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.hero p {
+    color: #e7d7c4;
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.section-title {
+    color: #7d1f2a;
+    font-size: 22px;
+    font-weight: 800;
+    margin: 18px 0 12px 0;
+}
+
+.info-card {
+    background: #ffffff;
+    padding: 17px;
+    border-radius: 14px;
+    border: 1px solid #e9e1d5;
+    margin-bottom: 12px;
+}
+
+.total-card {
+    background: #191919;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.total-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: #f1c77a;
+}
+
+.small-muted {
+    color: #8b8175;
+    font-size: 12px;
+}
+
+div.stButton > button {
+    border-radius: 10px;
+    min-height: 42px;
+    font-weight: 600;
+}
+
+div.stButton > button[kind="primary"] {
+    background: #7d1f2a;
+    border: 1px solid #7d1f2a;
+    color: white;
+}
+
+div.stButton > button[kind="primary"]:hover {
+    background: #58141c;
+    border-color: #58141c;
+}
+
+div[data-testid="stMetric"] {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #ece4d8;
+}
+
+.chat-panel {
+    background: #171717;
+    padding: 18px;
+    border-radius: 15px;
+    color: white;
+}
+
+.chat-bubble {
+    background: #ffffff;
+    color: #171717;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin: 9px 0;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.chat-user {
+    background: #7d1f2a;
+    color: white;
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin: 9px 0;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+div[data-testid="stExpander"] {
+    background: white;
+    border-radius: 12px;
+}
+
+hr {
+    border-color: #e5ddd2;
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 28px; }
+    .total-number { font-size: 25px; }
+}
+</style>
+""", unsafe_allow_html=True)
 
 # =========================================================
-# 4. DATABASE SQLITE
+# 3. DATABASE SQLITE
 # =========================================================
 
-DB_PATH = os.getenv("N2_DATABASE_PATH", "n2_sushi.db")
-
-
-def get_db_connection():
-    """Mở kết nối SQLite."""
-    conn = sqlite3.connect(DB_PATH, timeout=10)
-    conn.row_factory = sqlite3.Row
+def get_connection():
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 
 def init_database():
-    """Tạo bảng database và đồng bộ menu."""
-    with get_db_connection() as conn:
+    with get_connection() as conn:
         conn.executescript("""
-            CREATE TABLE IF NOT EXISTS menu_items (
-                item_id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                category TEXT NOT NULL,
-                price INTEGER NOT NULL,
-                description TEXT,
-                best_seller INTEGER NOT NULL DEFAULT 0,
-                updated_at TEXT NOT NULL
-            );
+        CREATE TABLE IF NOT EXISTS menu (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            category TEXT NOT NULL,
+            price INTEGER NOT NULL,
+            bestseller INTEGER DEFAULT 0,
+            active INTEGER DEFAULT 1
+        );
 
-            CREATE TABLE IF NOT EXISTS customers (
-                customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT UNIQUE,
-                loyalty_points INTEGER NOT NULL DEFAULT 0,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            );
+        CREATE TABLE IF NOT EXISTS customers (
+            phone TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            points INTEGER DEFAULT 0,
+            total_spent INTEGER DEFAULT 0,
+            visits INTEGER DEFAULT 0
+        );
 
-            CREATE TABLE IF NOT EXISTS orders (
-                order_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                invoice_number TEXT UNIQUE NOT NULL,
-                table_number TEXT NOT NULL,
-                customer_name TEXT NOT NULL,
-                customer_phone TEXT,
-                subtotal INTEGER NOT NULL,
-                discount INTEGER NOT NULL,
-                total INTEGER NOT NULL,
-                voucher TEXT,
-                points_earned INTEGER NOT NULL DEFAULT 0,
-                created_at TEXT NOT NULL
-            );
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_code TEXT UNIQUE NOT NULL,
+            customer_name TEXT NOT NULL,
+            customer_phone TEXT,
+            table_number TEXT,
+            created_at TEXT NOT NULL,
+            subtotal INTEGER NOT NULL,
+            discount INTEGER NOT NULL,
+            total INTEGER NOT NULL,
+            points_earned INTEGER DEFAULT 0,
+            voucher TEXT,
+            payment_method TEXT,
+            status TEXT DEFAULT 'Đã thanh toán'
+        );
 
-            CREATE TABLE IF NOT EXISTS order_items (
-                order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                invoice_number TEXT NOT NULL,
-                item_id TEXT,
-                item_name TEXT NOT NULL,
-                unit_price INTEGER NOT NULL,
-                quantity INTEGER NOT NULL,
-                note TEXT,
-                line_total INTEGER NOT NULL,
-                FOREIGN KEY(invoice_number)
-                    REFERENCES orders(invoice_number)
-                    ON DELETE CASCADE
-            );
-
-            CREATE TABLE IF NOT EXISTS chat_logs (
-                chat_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                session_id TEXT NOT NULL,
-                role TEXT NOT NULL,
-                content TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            );
-
-            CREATE INDEX IF NOT EXISTS idx_orders_phone
-            ON orders(customer_phone);
-
-            CREATE INDEX IF NOT EXISTS idx_chat_session
-            ON chat_logs(session_id, chat_id);
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            item_name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            price INTEGER NOT NULL,
+            quantity INTEGER NOT NULL,
+            line_total INTEGER NOT NULL,
+            FOREIGN KEY(order_id) REFERENCES orders(id)
+        );
         """)
 
-        now = datetime.now().isoformat(timespec="seconds")
+        count = conn.execute(
+            "SELECT COUNT(*) FROM menu"
+        ).fetchone()[0]
 
-        for item in MENU:
-            conn.execute("""
-                INSERT INTO menu_items (
-                    item_id, name, category, price,
-                    description, best_seller, updated_at
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(item_id) DO UPDATE SET
-                    name = excluded.name,
-                    category = excluded.category,
-                    price = excluded.price,
-                    description = excluded.description,
-                    best_seller = excluded.best_seller,
-                    updated_at = excluded.updated_at
-            """, (
-                item["id"],
-                item["name"],
-                item["category"],
-                item["price"],
-                item["description"],
-                int(item["best"]),
-                now,
-            ))
+        if count == 0:
+            menu_items = [
+                # Sushi
+                ("🍣 Sushi cá hồi", "Sushi", 45000, 1),
+                ("🍣 Sushi cá ngừ", "Sushi", 40000, 0),
+                ("🍣 Sushi lươn Nhật", "Sushi", 55000, 1),
+                ("🍣 Sushi tôm", "Sushi", 35000, 0),
+                ("🍣 Sushi thanh cua", "Sushi", 30000, 0),
+                ("🍣 Sushi trứng Nhật", "Sushi", 25000, 0),
+                ("🍣 Sushi tổng hợp 8 miếng", "Sushi", 99000, 1),
 
+                # Sashimi
+                ("🐟 Sashimi cá hồi", "Sashimi", 129000, 1),
+                ("🐟 Sashimi cá ngừ", "Sashimi", 119000, 0),
+                ("🐟 Sashimi tổng hợp", "Sashimi", 189000, 1),
 
-def save_chat_message(session_id, role, content):
-    """Lưu tin nhắn chatbot vào database."""
-    try:
-        with get_db_connection() as conn:
-            conn.execute("""
-                INSERT INTO chat_logs (
-                    session_id, role, content, created_at
-                )
+                # Món nóng
+                ("🍜 Ramen bò", "Món nóng", 89000, 1),
+                ("🍜 Ramen hải sản", "Món nóng", 95000, 0),
+                ("🍤 Tempura tôm", "Món nóng", 79000, 1),
+                ("🍗 Gà chiên sốt teriyaki", "Món nóng", 69000, 0),
+                ("🍚 Cơm bò Nhật", "Món nóng", 75000, 0),
+                ("🥟 Há cảo Nhật", "Món nóng", 49000, 0),
+                ("🥗 Salad rong biển", "Món nóng", 39000, 0),
+
+                # Combo
+                ("🎎 Combo N2 Couple", "Combo", 199000, 1),
+                ("🍱 Combo Sakura", "Combo", 299000, 1),
+                ("👨‍👩‍👧 Combo Family 3-4 người", "Combo", 499000, 1),
+                ("👑 Combo Premium", "Combo", 699000, 1),
+
+                # Thức uống
+                ("🍵 Trà xanh Nhật", "Thức uống", 25000, 0),
+                ("🧋 Trà đào", "Thức uống", 30000, 1),
+                ("🥤 Coca-Cola", "Thức uống", 20000, 0),
+                ("🍋 Nước chanh", "Thức uống", 25000, 0),
+                ("🍓 Soda dâu", "Thức uống", 35000, 0),
+                ("💧 Nước suối", "Thức uống", 15000, 0),
+            ]
+
+            conn.executemany("""
+                INSERT INTO menu(name, category, price, bestseller)
                 VALUES (?, ?, ?, ?)
-            """, (
-                session_id,
-                role,
-                str(content),
-                datetime.now().isoformat(timespec="seconds"),
-            ))
-    except sqlite3.Error as exc:
-        print(f"Không thể lưu lịch sử chatbot: {exc}")
+            """, menu_items)
+
+        conn.commit()
 
 
-def save_order_to_database(invoice):
-    """Lưu hóa đơn, chi tiết món và điểm khách hàng."""
-    now = invoice["time"].isoformat(timespec="seconds")
-    phone = (invoice.get("phone") or "").strip() or None
-
-    with get_db_connection() as conn:
-        conn.execute("""
-            INSERT INTO orders (
-                invoice_number, table_number, customer_name,
-                customer_phone, subtotal, discount, total,
-                voucher, points_earned, created_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            invoice["number"],
-            invoice["table"],
-            invoice["customer"],
-            phone,
-            invoice["subtotal"],
-            invoice["discount"],
-            invoice["total"],
-            invoice.get("voucher", ""),
-            invoice["points"],
-            now,
-        ))
-
-        for item in invoice["items"]:
-            item_id = next(
-                (
-                    menu_item["id"]
-                    for menu_item in MENU
-                    if menu_item["name"] == item["name"]
-                ),
-                None,
-            )
-
-            conn.execute("""
-                INSERT INTO order_items (
-                    invoice_number, item_id, item_name,
-                    unit_price, quantity, note, line_total
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                invoice["number"],
-                item_id,
-                item["name"],
-                item["price"],
-                item["quantity"],
-                item.get("note", ""),
-                item["total"],
-            ))
-
-        if phone:
-            existing_customer = conn.execute(
-                "SELECT customer_id FROM customers WHERE phone = ?",
-                (phone,),
-            ).fetchone()
-
-            if existing_customer:
-                conn.execute("""
-                    UPDATE customers
-                    SET name = ?,
-                        loyalty_points = loyalty_points + ?,
-                        updated_at = ?
-                    WHERE phone = ?
-                """, (
-                    invoice["customer"],
-                    invoice["points"],
-                    now,
-                    phone,
-                ))
-            else:
-                conn.execute("""
-                    INSERT INTO customers (
-                        name, phone, loyalty_points,
-                        created_at, updated_at
-                    )
-                    VALUES (?, ?, ?, ?, ?)
-                """, (
-                    invoice["customer"],
-                    phone,
-                    invoice["points"],
-                    now,
-                    now,
-                ))
-
-
-# Khởi tạo database
 init_database()
-# =========================================================
-# 4. VOUCHER
-# =========================================================
-
-VOUCHERS = {
-    "N2WELCOME": {
-        "type": "percent",
-        "value": 10,
-        "max_discount": 100000,
-        "minimum": 200000,
-    },
-    "N2SAVE50": {
-        "type": "fixed",
-        "value": 50000,
-        "max_discount": 50000,
-        "minimum": 300000,
-    },
-    "N2VIP": {
-        "type": "percent",
-        "value": 15,
-        "max_discount": 150000,
-        "minimum": 500000,
-    },
-}
-
 
 # =========================================================
-# 5. SESSION STATE
+# 4. HÀM HỖ TRỢ
+# =========================================================
+
+def money(value):
+    return f"{int(value):,}".replace(",", ".") + " đ"
+
+
+def get_menu(active_only=True):
+    with get_connection() as conn:
+        query = """
+            SELECT id, name, category, price, bestseller, active
+            FROM menu
+        """
+        if active_only:
+            query += " WHERE active = 1"
+        query += " ORDER BY category, name"
+
+        return pd.read_sql_query(query, conn)
+
+
+def get_customer(phone):
+    if not phone:
+        return None
+
+    with get_connection() as conn:
+        row = conn.execute("""
+            SELECT phone, name, points, total_spent, visits
+            FROM customers
+            WHERE phone = ?
+        """, (phone.strip(),)).fetchone()
+
+    if row:
+        return {
+            "phone": row[0],
+            "name": row[1],
+            "points": row[2],
+            "total_spent": row[3],
+            "visits": row[4],
+        }
+
+    return None
+
+
+def get_sales_summary():
+    with get_connection() as conn:
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        today_data = conn.execute("""
+            SELECT COUNT(*), COALESCE(SUM(total), 0)
+            FROM orders
+            WHERE substr(created_at, 1, 10) = ?
+              AND status = 'Đã thanh toán'
+        """, (today,)).fetchone()
+
+        all_data = conn.execute("""
+            SELECT COUNT(*), COALESCE(SUM(total), 0)
+            FROM orders
+            WHERE status = 'Đã thanh toán'
+        """).fetchone()
+
+    return today_data, all_data
+
+
+def generate_order_code():
+    return "N2" + datetime.now().strftime("%y%m%d%H%M%S") + \
+        uuid.uuid4().hex[:4].upper()
+
+
+def calculate_voucher(code, subtotal):
+    code = (code or "").strip().upper()
+
+    if not code:
+        return 0, ""
+
+    if code == "N2WELCOME":
+        discount = min(int(subtotal * 0.10), 50000)
+        return discount, "N2WELCOME - Giảm 10%, tối đa 50.000đ"
+
+    if code == "SUSHI20":
+        if subtotal >= 200000:
+            return 20000, "SUSHI20 - Giảm 20.000đ"
+        return 0, "Đơn hàng chưa đạt 200.000đ để dùng SUSHI20"
+
+    if code == "N2VIP":
+        if subtotal >= 500000:
+            discount = min(int(subtotal * 0.15), 100000)
+            return discount, "N2VIP - Giảm 15%, tối đa 100.000đ"
+        return 0, "Đơn hàng chưa đạt 500.000đ để dùng N2VIP"
+
+    return 0, "Mã voucher không hợp lệ"
+
+
+def build_invoice_html(order, items):
+    safe = lambda x: html.escape(str(x if x is not None else ""))
+
+    rows = ""
+    for item in items:
+        rows += f"""
+        <tr>
+            <td>{safe(item['name'])}</td>
+            <td style="text-align:center">{item['quantity']}</td>
+            <td style="text-align:right">{money(item['price'])}</td>
+            <td style="text-align:right">{money(item['line_total'])}</td>
+        </tr>
+        """
+
+    return f"""<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hóa đơn {safe(order['order_code'])}</title>
+<style>
+body {{
+    font-family: Arial, sans-serif;
+    max-width: 760px;
+    margin: 30px auto;
+    padding: 25px;
+    color: #222;
+}}
+h1 {{ color: #7d1f2a; text-align: center; }}
+p {{ line-height: 1.7; }}
+table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+th, td {{ border-bottom: 1px solid #ddd; padding: 11px 6px; }}
+th {{ background: #f5f0e8; text-align: left; }}
+.total {{ text-align: right; font-size: 21px; color: #7d1f2a; font-weight: bold; }}
+@media print {{
+    button {{ display: none; }}
+    body {{ margin: 0 auto; }}
+}}
+</style>
+</head>
+<body>
+<h1>🍣 N2 SUSHI</h1>
+<p style="text-align:center">
+    {safe(SHOP_ADDRESS)}<br>
+    Điện thoại: {safe(SHOP_PHONE)}<br>
+    Giờ mở cửa: {safe(SHOP_HOURS)}
+</p>
+<hr>
+<h2>HÓA ĐƠN THANH TOÁN</h2>
+<p>
+    Mã hóa đơn: <b>{safe(order['order_code'])}</b><br>
+    Thời gian: {safe(order['created_at'])}<br>
+    Khách hàng: {safe(order['customer_name'])}<br>
+    Điện thoại: {safe(order['customer_phone'])}<br>
+    Số bàn: {safe(order['table_number'])}<br>
+    Hình thức thanh toán: {safe(order['payment_method'])}
+</p>
+<table>
+<thead>
+<tr>
+<th>Món ăn / thức uống</th>
+<th style="text-align:center">SL</th>
+<th style="text-align:right">Đơn giá</th>
+<th style="text-align:right">Thành tiền</th>
+</tr>
+</thead>
+<tbody>{rows}</tbody>
+</table>
+<p style="text-align:right">Tạm tính: <b>{money(order['subtotal'])}</b></p>
+<p style="text-align:right">Voucher: <b>-{money(order['discount'])}</b></p>
+<p class="total">TỔNG THANH TOÁN: {money(order['total'])}</p>
+<p>Điểm tích lũy nhận được: <b>{order['points_earned']} điểm</b></p>
+<p style="text-align:center;margin-top:35px">
+    Cảm ơn quý khách đã lựa chọn N2 Sushi!<br>
+    Hẹn gặp lại quý khách ❤️
+</p>
+<button onclick="window.print()">In hóa đơn / Lưu PDF</button>
+</body>
+</html>"""
+
+
+# =========================================================
+# 5. HEADER - HÌNH ẢNH QUÁN
+# =========================================================
+
+try:
+    st.image(BANNER_URL, use_container_width=True)
+except Exception:
+    st.markdown("""
+    <div class="hero">
+        <h1>🍣 N2 SUSHI</h1>
+        <p>Japanese Dining · Fresh Taste · Premium Experience</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="hero">
+    <h1>🍣 N2 SUSHI</h1>
+    <p>
+        JAPANESE DINING · FRESH TASTE · PREMIUM EXPERIENCE<br>
+        📍 {html.escape(SHOP_ADDRESS)}<br>
+        ☎️ {html.escape(SHOP_PHONE)}
+        &nbsp;&nbsp; | &nbsp;&nbsp;
+        🕒 {html.escape(SHOP_HOURS)}
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# 6. KHỞI TẠO SESSION
 # =========================================================
 
 if "cart" not in st.session_state:
     st.session_state.cart = {}
 
-if "notes" not in st.session_state:
-    st.session_state.notes = {}
+if "last_invoice" not in st.session_state:
+    st.session_state.last_invoice = None
 
-if "chat_messages" not in st.session_state:
-    st.session_state.chat_messages = []
-
-if "invoice" not in st.session_state:
-    st.session_state.invoice = None
-
-if "chat_session_id" not in st.session_state:
-    st.session_state.chat_session_id = str(uuid.uuid4())
-
-
-# =========================================================
-# 6. HÀM TIỆN ÍCH
-# =========================================================
-
-def money(value):
-    return f"{int(value):,}".replace(",", ".") + " ₫"
-
-
-def add_item(item_id):
-    if item_id not in st.session_state.cart:
-        st.session_state.cart[item_id] = 1
-    else:
-        st.session_state.cart[item_id] += 1
-
-
-def remove_item(item_id):
-    if item_id not in st.session_state.cart:
-        return
-
-    st.session_state.cart[item_id] -= 1
-
-    if st.session_state.cart[item_id] <= 0:
-        del st.session_state.cart[item_id]
-        st.session_state.notes.pop(item_id, None)
-
-
-def subtotal():
-    total = 0
-
-    for item_id, quantity in st.session_state.cart.items():
-        item = MENU_BY_ID[item_id]
-        total += item["price"] * quantity
-
-    return total
-
-
-def calculate_voucher(code, amount):
-    code = code.strip().upper()
-
-    if not code:
-        return 0, ""
-
-    if code not in VOUCHERS:
-        return 0, "Voucher không tồn tại."
-
-    voucher = VOUCHERS[code]
-
-    if amount < voucher["minimum"]:
-        return 0, f"Đơn hàng tối thiểu {money(voucher['minimum'])}."
-
-    if voucher["type"] == "percent":
-        discount = amount * voucher["value"] / 100
-    else:
-        discount = voucher["value"]
-
-    discount = min(
-        discount,
-        voucher["max_discount"],
-        amount,
-    )
-
-    return discount, f"Đã áp dụng {code}: giảm {money(discount)}."
-
-
-def loyalty_points(amount):
-    return int(amount // 10000)
-
-
-# =========================================================
-# 7. CHATBOT LOCAL
-# =========================================================
-
-def normalize_text(value):
-    """Chuẩn hóa chữ thường và bỏ dấu tiếng Việt."""
-    value = str(value or "").lower().strip()
-    value = unicodedata.normalize("NFD", value)
-
-    return "".join(
-        ch for ch in value
-        if unicodedata.category(ch) != "Mn"
-    ).replace("đ", "d")
-
-
-def find_menu_matches(question):
-    q = normalize_text(question)
-    matches = []
-
-    for item in MENU:
-        name = normalize_text(item["name"])
-        words = [w for w in name.split() if len(w) > 2]
-
-        if name in q or (
-            words
-            and sum(w in q for w in words) >= max(1, len(words) - 1)
-        ):
-            matches.append(item)
-
-    return matches
-
-
-def local_chatbot(question):
-    """Chatbot dự phòng khi chưa cấu hình API AI."""
-    q = normalize_text(question)
-
-    if any(k in q for k in [
-        "xin chao", "hello", "hi ", "chao ban", "hey"
-    ]):
-        return (
-            "Xin chào 👋 Mình là N2 Assistant. "
-            "Bạn muốn xem menu, tìm món, hỏi combo, voucher "
-            "hay thông tin quán nè?"
-        )
-
-    if any(k in q for k in [
-        "best seller", "best-seller", "ban chay",
-        "mon hot", "mon duoc yeu thich"
-    ]):
-        names = [
-            f"- {x['name']} — {money(x['price'])}"
-            for x in MENU if x["best"]
-        ]
-        return "⭐ **Best seller của N2 Sushi:**\n\n" + "\n".join(names)
-
-    if any(k in q for k in [
-        "voucher", "khuyen mai", "uu dai", "giam gia", "ma giam"
-    ]):
-        return (
-            "🎁 **Voucher hiện có:**\n\n"
-            "- **N2WELCOME:** giảm 10%, tối đa 100.000đ, "
-            "đơn tối thiểu 200.000đ.\n"
-            "- **N2SAVE50:** giảm 50.000đ, "
-            "đơn tối thiểu 300.000đ.\n"
-            "- **N2VIP:** giảm 15%, tối đa 150.000đ, "
-            "đơn tối thiểu 500.000đ."
-        )
-
-    if any(k in q for k in [
-        "dia chi", "o dau", "dia diem", "duong nao"
-    ]):
-        return f"📍 **Địa chỉ N2 Sushi:**\n\n{RESTAURANT_ADDRESS}"
-
-    if any(k in q for k in [
-        "gio mo cua", "mo cua", "dong cua",
-        "may gio", "thoi gian hoat dong"
-    ]):
-        return f"🕐 **Giờ mở cửa:**\n\n{RESTAURANT_HOURS}"
-
-    if any(k in q for k in [
-        "so dien thoai", "hotline", "lien he", "sdt"
-    ]):
-        return f"📞 **Hotline N2 Sushi:**\n\n{RESTAURANT_PHONE}"
-
-    if any(k in q for k in [
-        "2 nguoi", "hai nguoi", "cap doi"
-    ]):
-        return (
-            "👫 **Combo N2 Couple — 299.000đ**, dành cho 2 người. "
-            "Bạn có thể gọi thêm nước uống tùy sở thích nha."
-        )
-
-    if any(k in q for k in ["3 nguoi", "ba nguoi"]):
-        return "👨‍👩‍👧 **Combo N2 Family — 429.000đ**, dành cho 3 người."
-
-    if any(k in q for k in [
-        "4-5 nguoi", "4 5 nguoi", "4 nguoi",
-        "5 nguoi", "nhom dong"
-    ]):
-        return (
-            "👨‍👩‍👧‍👦 **Combo N2 Party — 649.000đ**, "
-            "dành cho 4–5 người."
-        )
-
-    matches = find_menu_matches(question)
-
-    if matches:
-        lines = [
-            f"- **{m['name']}** ({m['category']}): "
-            f"{money(m['price'])} — {m['description']}."
-            for m in matches[:5]
-        ]
-
-        return (
-            "🍣 Mình tìm thấy món này trong menu N2 Sushi nè:\n\n"
-            + "\n".join(lines)
-        )
-
-    if any(k in q for k in [
-        "menu", "co mon gi", "mon an", "thuc don", "gia mon"
-    ]):
-        categories = {}
-
-        for item in MENU:
-            categories.setdefault(item["category"], []).append(item)
-
-        lines = []
-
-        for category, items in categories.items():
-            lines.append(
-                f"**{category}:** "
-                + ", ".join(
-                    f"{x['name']} ({money(x['price'])})"
-                    for x in items
-                )
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [
+        {
+            "role": "assistant",
+            "content": (
+                "Xin chào! 🍣 Mình là trợ lý N2 Sushi. "
+                "Bạn muốn hỏi về menu, món best seller, "
+                "địa chỉ, giờ mở cửa hay voucher?"
             )
+        }
+    ]
 
-        return "📋 **Menu N2 Sushi theo danh mục:**\n\n" + "\n\n".join(lines)
-
-    return (
-        "Mình có thể giúp bạn xem menu/giá món, gợi ý combo theo số người, "
-        "kiểm tra voucher, hoặc cung cấp địa chỉ và giờ mở cửa. "
-        "Bạn thử hỏi cụ thể hơn nha 😊"
-    )
-
-
-def ask_chatbot(question):
-    """Gọi AI qua OpenRouter; nếu lỗi thì dùng chatbot local."""
-    api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
-
-    if not api_key:
-        return local_chatbot(question)
-
-    menu_text = "\n".join(
-        f"{item['name']} | danh mục: {item['category']} | "
-        f"giá: {money(item['price'])} | "
-        f"mô tả: {item['description']} | "
-        f"best seller: {'có' if item['best'] else 'không'}"
-        for item in MENU
-    )
-
-    voucher_text = "\n".join(
-        f"{code}: giảm {v['value']}"
-        f"{'%' if v['type'] == 'percent' else 'đ'}, "
-        f"tối đa {money(v['max_discount'])}, "
-        f"đơn tối thiểu {money(v['minimum'])}"
-        for code, v in VOUCHERS.items()
-    )
-
-    system_prompt = f"""
-Bạn là trợ lý AI chính thức của N2 Sushi.
-Trả lời bằng tiếng Việt tự nhiên, thân thiện và ngắn gọn.
-
-THÔNG TIN QUÁN:
-Tên: {RESTAURANT_NAME}
-Địa chỉ: {RESTAURANT_ADDRESS}
-Điện thoại: {RESTAURANT_PHONE}
-Giờ mở cửa: {RESTAURANT_HOURS}
-
-MENU:
-{menu_text}
-
-VOUCHER:
-{voucher_text}
-
-QUY TẮC:
-- Chỉ khẳng định giá, thành phần, ưu đãi và thông tin có trong dữ liệu.
-- Combo N2 Couple 299.000đ cho 2 người.
-- Combo N2 Family 429.000đ cho 3 người.
-- Combo N2 Party 649.000đ cho 4–5 người.
-- Khi gợi ý món, cân nhắc số người, ngân sách và sở thích.
-- Hiểu câu hỏi tiếp nối dựa trên lịch sử hội thoại.
-- Không bịa thông tin về đơn hàng hoặc dữ liệu khách hàng.
-- Nếu chưa có thông tin, hãy nói rõ và hướng khách liên hệ nhân viên.
-"""
-
-    history = []
-
-    for message in st.session_state.get("chat_messages", [])[-8:]:
-        role = (
-            "assistant"
-            if message.get("role") == "assistant"
-            else "user"
-        )
-
-        history.append({
-            "role": role,
-            "content": str(message.get("content", ""))[:2000],
-        })
-
-    if not history or history[-1].get("content") != question:
-        history.append({"role": "user", "content": question})
-
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": os.getenv(
-                    "OPENROUTER_MODEL",
-                    "openai/gpt-4o-mini",
-                ),
-                "messages": [
-                    {"role": "system", "content": system_prompt}
-                ] + history,
-                "temperature": 0.35,
-            },
-            timeout=30,
-        )
-
-        response.raise_for_status()
-        data = response.json()
-        answer = data["choices"][0]["message"]["content"]
-
-        if isinstance(answer, str) and answer.strip():
-            return answer.strip()
-
-        return local_chatbot(question)
-
-    except Exception as exc:
-        print(f"Chatbot AI lỗi, chuyển sang chế độ local: {exc}")
-        return local_chatbot(question)
-
+if "customer_phone_input" not in st.session_state:
+    st.session_state.customer_phone_input = ""
 
 # =========================================================
-# 8. CSS
-# =========================================================
-# =========================================================
-# 8. CSS
+# 7. SIDEBAR - ĐIỀU HƯỚNG
 # =========================================================
 
-html_markdown(
-    """
-<style>
-    .stApp {
-        background: linear-gradient(135deg, #fff8f3 0%, #f5f1f7 100%);
-        color: #39313a;
-    }
+st.sidebar.markdown("# 🍣 N2 SUSHI")
+st.sidebar.caption("PREMIUM POS SYSTEM")
 
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #40353c 0%, #29252c 100%);
-    }
-
-    [data-testid="stSidebar"] * {
-        color: #f9f2f3;
-    }
-
-    .main-title {
-        font-size: 42px;
-        font-weight: 900;
-        color: #6c3540;
-        letter-spacing: -1px;
-        margin-bottom: 5px;
-    }
-
-    .main-subtitle {
-        color: #87717a;
-        font-size: 15px;
-        margin-bottom: 25px;
-    }
-
-    .section-title {
-        font-size: 27px;
-        font-weight: 850;
-        color: #593d43;
-        margin: 20px 0 16px 0;
-    }
-
-    .info-card {
-        background: rgba(255, 255, 255, 0.85);
-        border: 1px solid #eadde0;
-        border-radius: 20px;
-        padding: 22px;
-        margin-bottom: 16px;
-        box-shadow: 0 5px 18px rgba(70, 40, 50, 0.05);
-    }
-
-    .info-label {
-        font-size: 12px;
-        font-weight: 800;
-        color: #a0878d;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .info-value {
-        font-size: 25px;
-        font-weight: 900;
-        color: #593d43;
-        margin-top: 8px;
-    }
-
-    .menu-card {
-        background: #ffffff;
-        border: 1px solid #eadde0;
-        border-radius: 18px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 14px rgba(70, 40, 50, 0.04);
-    }
-
-    .menu-name {
-        font-size: 17px;
-        font-weight: 800;
-        color: #53363e;
-    }
-
-    .menu-description {
-        font-size: 13px;
-        color: #8c777d;
-        margin-top: 5px;
-    }
-
-    .menu-price {
-        font-size: 19px;
-        font-weight: 900;
-        color: #b04c58;
-        margin-top: 10px;
-    }
-
-    .menu-category {
-        display: inline-block;
-        background: #f9e8eb;
-        color: #a64a58;
-        border-radius: 20px;
-        padding: 4px 10px;
-        font-size: 11px;
-        font-weight: 800;
-        margin-bottom: 8px;
-    }
-
-    .chat-user {
-        background: #a8434d;
-        color: #ffffff;
-        border-radius: 18px 18px 4px 18px;
-        padding: 13px 15px;
-        margin: 12px 0 12px 24px;
-        font-size: 14px;
-        overflow-wrap: anywhere;
-    }
-
-    .chat-bot {
-        background: #51454c;
-        color: #ffffff;
-        border: 1px solid #66565e;
-        border-radius: 18px 18px 18px 4px;
-        padding: 13px 15px;
-        margin: 12px 16px 12px 0;
-        font-size: 14px;
-        overflow-wrap: anywhere;
-    }
-
-    .chat-user b,
-    .chat-bot b {
-        display: inline-block;
-        margin-bottom: 7px;
-    }
-
-    .cart-card {
-        background: #ffffff;
-        border: 1px solid #eadde0;
-        border-radius: 18px;
-        padding: 18px;
-        margin-bottom: 12px;
-    }
-
-    .cart-total {
-        background: linear-gradient(135deg, #773c49, #a94c59);
-        color: white;
-        border-radius: 18px;
-        padding: 22px;
-        margin-top: 16px;
-    }
-
-    .cart-total-label {
-        font-size: 13px;
-        opacity: 0.85;
-    }
-
-    .cart-total-value {
-        font-size: 30px;
-        font-weight: 900;
-        margin-top: 8px;
-    }
-
-    .invoice-box {
-        background: #ffffff;
-        border: 1px solid #eadde0;
-        border-radius: 20px;
-        padding:
-        # =========================================================
-# 10. HEADER
-# =========================================================
-
-html_markdown(
-    """
-<div class="hero">
-    <div class="hero-small">JAPANESE CUISINE</div>
-    <div class="hero-title">🍣 N2 Sushi</div>
-    <div class="hero-subtitle">
-        Premium Sushi • Sashimi • Japanese Dining
-    </div>
-</div>
-""",
-    unsafe_allow_html=True,
+page = st.sidebar.radio(
+    "CHỨC NĂNG",
+    [
+        "🧾 Tạo đơn & tính tiền",
+        "🍱 Quản lý thực đơn",
+        "📊 Báo cáo doanh thu",
+        "🗂️ Lịch sử hóa đơn",
+        "💬 Chatbot tư vấn",
+    ]
 )
 
+st.sidebar.divider()
+st.sidebar.markdown("### 🎟️ VOUCHER")
+st.sidebar.markdown("""
+**N2WELCOME**  
+Giảm 10%, tối đa 50.000đ.
+
+**SUSHI20**  
+Giảm 20.000đ cho đơn từ 200.000đ.
+
+**N2VIP**  
+Giảm 15%, tối đa 100.000đ cho đơn từ 500.000đ.
+""")
+
+st.sidebar.caption("N2 Sushi POS • SQLite Database")
 
 # =========================================================
-# 11. ẢNH QUÁN
+# 8. TRANG TẠO ĐƠN HÀNG
 # =========================================================
 
-if os.path.exists("sushi.jpg"):
-    image_left, image_center, image_right = st.columns([1, 2, 1])
+if page == "🧾 Tạo đơn & tính tiền":
 
-    with image_center:
-        st.image("sushi.jpg", width="stretch")
-else:
-    st.warning(
-        "Không tìm thấy sushi.jpg. "
-        "Hãy đặt sushi.jpg cùng thư mục với app.py."
+    st.markdown(
+        '<div class="section-title">🧾 THÔNG TIN KHÁCH HÀNG</div>',
+        unsafe_allow_html=True
     )
 
+    c1, c2, c3 = st.columns(3)
 
-# =========================================================
-# 12. THÔNG TIN NHANH
-# =========================================================
+    with c1:
+        customer_name = st.text_input(
+            "👤 Tên khách hàng",
+            placeholder="Nhập tên khách hàng"
+        )
 
-html_markdown("<br>", unsafe_allow_html=True)
+    with c2:
+        customer_phone = st.text_input(
+            "📱 Số điện thoại",
+            key="customer_phone_input",
+            placeholder="Nhập số điện thoại"
+        )
 
-info1, info2, info3, info4 = st.columns(4)
+    with c3:
+        table_number = st.text_input(
+            "🪑 Số bàn",
+            placeholder="VD: B01"
+        )
 
-with info1:
-    html_markdown(
-        f"""
-<div class="info-box">
-    <div class="info-label">ĐỊA CHỈ</div>
-    <div class="info-value">📍 N2 Sushi</div>
-    <div style="font-size:11px;color:#8f7b74;margin-top:5px;">
-        {html.escape(RESTAURANT_ADDRESS)}
-    </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
+    existing_customer = get_customer(customer_phone)
 
-with info2:
-    html_markdown(
-        """
-<div class="info-box">
-    <div class="info-label">GIỜ MỞ CỬA</div>
-    <div class="info-value">🕐 10:00 - 22:00</div>
-    <div style="font-size:11px;color:#8f7b74;margin-top:5px;">
-        Hàng ngày
-    </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-with info3:
-    html_markdown(
-        """
-<div class="info-box">
-    <div class="info-label">BEST SELLER</div>
-    <div class="info-value">⭐ Sushi & Sashimi</div>
-    <div style="font-size:11px;color:#8f7b74;margin-top:5px;">
-        Món được yêu thích
-    </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-with info4:
-    html_markdown(
-        """
-<div class="info-box">
-    <div class="info-label">TÍCH ĐIỂM</div>
-    <div class="info-value">🎁 1 điểm / 10.000đ</div>
-    <div style="font-size:11px;color:#8f7b74;margin-top:5px;">
-        Dành cho khách hàng
-    </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-
-# =========================================================
-# 13. CHATBOT SIDEBAR
-# =========================================================
-
-with st.sidebar:
-    html_markdown(
-        """
-<div style="text-align:center;padding:10px 0 18px;">
-    <div style="font-size:42px;">🍣</div>
-    <div style="font-size:23px;font-weight:800;color:#ffffff;">
-        N2 Assistant
-    </div>
-    <div style="font-size:11px;color:#c9aaa1;margin-top:4px;">
-        Trợ lý N2 Sushi
-    </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
+    if existing_customer:
+        st.success(
+            f"🌟 Khách hàng thân thiết: "
+            f"{existing_customer['name']} · "
+            f"{existing_customer['points']} điểm · "
+            f"{existing_customer['visits']} lượt ghé"
+        )
 
     st.divider()
 
-    for message in st.session_state.chat_messages:
-        safe_chat_content = html.escape(
-            str(message.get("content", ""))
-        ).replace("\n", "<br>")
+    menu_df = get_menu()
 
-        if message.get("role") == "user":
-            html_markdown(
-                f"""
-<div class="chat-user">
-    <b>Bạn</b><br>
-    {safe_chat_content}
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-        else:
-            html_markdown(
-                f"""
-<div class="chat-bot">
-    <b>🍣 N2 Sushi</b><br>
-    {safe_chat_content}
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-
-    user_question = st.chat_input("Hỏi N2 Sushi...")
-
-    if user_question:
-        st.session_state.chat_messages.append(
-            {"role": "user", "content": user_question}
-        )
-
-        save_chat_message(
-            st.session_state.chat_session_id,
-            "user",
-            user_question,
-        )
-
-        answer = ask_chatbot(user_question)
-
-        st.session_state.chat_messages.append(
-            {"role": "assistant", "content": answer}
-        )
-
-        save_chat_message(
-            st.session_state.chat_session_id,
-            "assistant",
-            answer,
-        )
-
-        st.rerun()
-
-    if st.button("🗑️ Xóa cuộc trò chuyện", use_container_width=True):
-        st.session_state.chat_messages = []
-        st.rerun()
-
-
-# =========================================================
-# 14. THÔNG TIN KHÁCH HÀNG
-# =========================================================
-
-html_markdown(
-    '<div class="section-title">🧾 Thông tin đơn hàng</div>',
-    unsafe_allow_html=True,
-)
-
-customer1, customer2, customer3 = st.columns([1, 1.5, 1.5])
-
-with customer1:
-    table_number = st.text_input(
-        "🪑 Số bàn",
-        placeholder="VD: B12",
+    st.markdown(
+        '<div class="section-title">🍱 MENU N2 SUSHI</div>',
+        unsafe_allow_html=True
     )
 
-with customer2:
-    customer_name = st.text_input(
-        "👤 Tên khách hàng",
-        placeholder="Nguyễn Văn A",
-    )
-
-with customer3:
-    customer_phone = st.text_input(
-        "📱 Số điện thoại tích điểm",
-        placeholder="0901234567",
-    )
-
-
-# =========================================================
-# 15. MENU + GIỎ HÀNG
-# =========================================================
-
-menu_column, cart_column = st.columns([1.7, 1], gap="large")
-# =========================================================
-# 15. MENU + GIỎ HÀNG
-# =========================================================
-
-with menu_column:
-    html_markdown(
-        '<div class="section-title">🍱 Thực đơn</div>',
-        unsafe_allow_html=True,
-    )
-
-    categories = ["Tất cả"] + list(dict.fromkeys(
-        item["category"] for item in MENU
-    ))
+    category_options = [
+        "Tất cả",
+        "Sushi",
+        "Sashimi",
+        "Món nóng",
+        "Combo",
+        "Thức uống"
+    ]
 
     selected_category = st.selectbox(
-        "Chọn danh mục",
-        categories,
-        key="menu_category_filter",
+        "Chọn danh mục món",
+        category_options
     )
 
-    search_menu = st.text_input(
-        "🔎 Tìm món ăn",
-        placeholder="Nhập tên món bạn muốn tìm...",
-        key="menu_search",
-    )
-
-    filtered_menu = MENU
-
-    if selected_category != "Tất cả":
-        filtered_menu = [
-            item for item in filtered_menu
-            if item["category"] == selected_category
-        ]
-
-    if search_menu.strip():
-        keyword = normalize_text(search_menu)
-        filtered_menu = [
-            item for item in filtered_menu
-            if keyword in normalize_text(item["name"])
-            or keyword in normalize_text(item["description"])
-        ]
-
-    if not filtered_menu:
-        st.info("Không tìm thấy món phù hợp.")
-
-    for item in filtered_menu:
-        with st.container(border=True):
-            if item["best"]:
-                st.caption("⭐ BEST SELLER")
-
-            st.subheader(item["name"])
-            st.caption(item["category"])
-            st.write(item["description"])
-            st.markdown(f"### {money(item['price'])}")
-
-            if st.button(
-                "➕ Thêm vào giỏ",
-                key=f"add_{item['id']}",
-                use_container_width=True,
-                type="primary",
-            ):
-                add_item(item["id"])
-                st.rerun()
-
-
-# =========================================================
-# 16. GIỎ HÀNG
-# =========================================================
-
-with cart_column:
-    html_markdown(
-        '<div class="section-title">🛒 Giỏ hàng</div>',
-        unsafe_allow_html=True,
-    )
-
-    if not st.session_state.cart:
-        st.info("Giỏ hàng đang trống. Hãy chọn món ở bên trái.")
+    if selected_category == "Tất cả":
+        filtered_menu = menu_df
     else:
-        for item_id in list(st.session_state.cart.keys()):
-            item = MENU_BY_ID[item_id]
-            quantity = st.session_state.cart[item_id]
+        filtered_menu = menu_df[
+            menu_df["category"] == selected_category
+        ]
 
-            with st.container(border=True):
-                st.markdown(f"**{item['name']}**")
-                st.caption(
-                    f"{money(item['price'])} × {quantity} "
-                    f"= {money(item['price'] * quantity)}"
+    if not filtered_menu.empty:
+        menu_display = filtered_menu[
+            ["name", "category", "price", "bestseller"]
+        ].copy()
+
+        menu_display.columns = [
+            "Tên món",
+            "Danh mục",
+            "Giá (đ)",
+            "Best seller"
+        ]
+
+        menu_display["Giá (đ)"] = menu_display["Giá (đ)"].apply(
+            money
+        )
+        menu_display["Best seller"] = menu_display[
+            "Best seller"
+        ].map({1: "⭐ Bán chạy", 0: ""})
+
+        st.dataframe(
+            menu_display,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    st.markdown("### 🛒 Chọn nhiều món cho cùng một đơn")
+
+    available_names = filtered_menu["name"].tolist()
+
+    if available_names:
+        selected_items = st.multiselect(
+            "Chọn món ăn, combo và thức uống",
+            options=available_names,
+            key="selected_items"
+        )
+
+        for item_name in selected_items:
+            item_row = menu_df[
+                menu_df["name"] == item_name
+            ].iloc[0]
+
+            item_price = int(item_row["price"])
+
+            col1, col2, col3 = st.columns([4, 2, 2])
+
+            with col1:
+                st.write(f"**{item_name}**")
+                st.caption(money(item_price))
+
+            with col2:
+                qty = st.number_input(
+                    "Số lượng",
+                    min_value=1,
+                    max_value=100,
+                    value=st.session_state.cart.get(
+                        item_name, 1
+                    ),
+                    step=1,
+                    key="qty_" + str(item_row["id"])
                 )
 
-                minus_col, qty_col, plus_col = st.columns([1, 1, 1])
+            with col3:
+                st.write("Thành tiền")
+                st.write(f"**{money(item_price * qty)}**")
 
-                with minus_col:
-                    if st.button(
-                        "➖",
-                        key=f"minus_{item_id}",
-                        use_container_width=True,
-                    ):
-                        remove_item(item_id)
-                        st.rerun()
+            st.session_state.cart[item_name] = int(qty)
 
-                with qty_col:
-                    st.markdown(
-                        f"<div style='text-align:center;padding-top:8px'>"
-                        f"{quantity}</div>",
-                        unsafe_allow_html=True,
-                    )
+    # Xóa món khỏi đơn nếu người dùng bỏ chọn
+    current_selected = set(
+        st.session_state.get("selected_items", [])
+    )
 
-                with plus_col:
-                    if st.button(
-                        "➕",
-                        key=f"plus_{item_id}",
-                        use_container_width=True,
-                    ):
-                        add_item(item_id)
-                        st.rerun()
-
-                note_value = st.text_input(
-                    "Ghi chú món",
-                    value=st.session_state.notes.get(item_id, ""),
-                    placeholder="VD: ít cay, không hành...",
-                    key=f"note_{item_id}",
-                )
-
-                st.session_state.notes[item_id] = note_value
+    for old_item in list(st.session_state.cart.keys()):
+        if old_item not in current_selected:
+            del st.session_state.cart[old_item]
 
     st.divider()
 
-    voucher_code = st.text_input(
-        "🎟️ Mã voucher",
-        placeholder="VD: N2WELCOME",
-        key="voucher_code",
-    ).strip().upper()
-
-    current_subtotal = subtotal()
-
-    discount_amount, voucher_message = calculate_voucher(
-        voucher_code,
-        current_subtotal,
+    st.markdown(
+        '<div class="section-title">🧮 TỔNG KẾT ĐƠN HÀNG</div>',
+        unsafe_allow_html=True
     )
 
-    discount_amount = int(discount_amount)
-    total_amount = max(0, current_subtotal - discount_amount)
+    # Tạo dữ liệu giỏ hàng
+    order_items = []
 
-    if voucher_code:
-        if discount_amount > 0:
-            st.success(voucher_message)
-        else:
-            st.warning(voucher_message)
+    for item_name, qty in st.session_state.cart.items():
+        rows = menu_df[menu_df["name"] == item_name]
 
-    st.markdown(f"**Tạm tính:** {money(current_subtotal)}")
-    st.markdown(f"**Giảm giá:** {money(discount_amount)}")
+        if rows.empty:
+            continue
 
-    html_markdown(
-        f"""
-<div class="cart-total">
-    <div class="cart-total-label">TỔNG THANH TOÁN</div>
-    <div class="cart-total-value">{money(total_amount)}</div>
-</div>
-""",
-        unsafe_allow_html=True,
+        row = rows.iloc[0]
+        price = int(row["price"])
+        qty = int(qty)
+
+        order_items.append({
+            "name": item_name,
+            "category": row["category"],
+            "price": price,
+            "quantity": qty,
+            "line_total": price * qty
+        })
+
+    subtotal = sum(
+        item["line_total"] for item in order_items
     )
 
-    st.caption("Điểm tích lũy dự kiến: "
-               f"{loyalty_points(total_amount)} điểm")
+    left, right = st.columns([3, 2])
 
-    checkout_clicked = st.button(
-        "✅ Xác nhận đơn hàng",
-        type="primary",
-        use_container_width=True,
-        disabled=(
-            not st.session_state.cart
-            or not table_number.strip()
-            or not customer_name.strip()
-        ),
-        key="checkout_button",
-    )
+    with left:
+        st.markdown("#### Chi tiết món đã gọi")
 
-    if checkout_clicked:
-        now = datetime.now()
-        invoice_number = (
-            "N2-" + now.strftime("%Y%m%d-%H%M%S")
-            + "-" + uuid.uuid4().hex[:4].upper()
-        )
-
-        invoice_items = []
-
-        for item_id, quantity in st.session_state.cart.items():
-            item = MENU_BY_ID[item_id]
-
-            invoice_items.append({
-                "name": item["name"],
-                "price": int(item["price"]),
-                "quantity": int(quantity),
-                "note": st.session_state.notes.get(item_id, ""),
-                "total": int(item["price"] * quantity),
+        if order_items:
+            order_df = pd.DataFrame(order_items)
+            order_df = order_df.rename(columns={
+                "name": "Tên món",
+                "category": "Danh mục",
+                "price": "Đơn giá",
+                "quantity": "Số lượng",
+                "line_total": "Thành tiền"
             })
 
-        invoice_data = {
-            "number": invoice_number,
-            "time": now,
-            "table": table_number.strip(),
-            "customer": customer_name.strip(),
-            "phone": customer_phone.strip(),
-            "items": invoice_items,
-            "subtotal": int(current_subtotal),
-            "discount": int(discount_amount),
-            "total": int(total_amount),
-            "voucher": voucher_code if discount_amount > 0 else "",
-            "points": loyalty_points(total_amount),
-        }
+            order_df["Đơn giá"] = order_df["Đơn giá"].apply(money)
+            order_df["Thành tiền"] = order_df["Thành tiền"].apply(money)
 
-        try:
-            save_order_to_database(invoice_data)
-            st.session_state.invoice = invoice_data
-            st.session_state.cart = {}
-            st.session_state.notes = {}
+            st.dataframe(
+                order_df,
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info("Chưa có món nào trong đơn hàng.")
 
-            st.success("Đơn hàng đã được lưu thành công!")
-            st.rerun()
+    with right:
+        st.markdown("#### 💳 Thanh toán")
 
-        except sqlite3.Error as exc:
-            st.error(f"Không lưu được đơn hàng vào database: {exc}")
+        st.write("Tạm tính:", money(subtotal))
 
+        voucher_code = st.text_input(
+            "🎟️ Nhập mã voucher",
+            placeholder="VD: N2WELCOME",
+            key="voucher_code"
+        )
+
+        discount, voucher_message = calculate_voucher(
+            voucher_code, subtotal
+        )
+
+        discount = min(discount, subtotal)
+        total = max(0, subtotal - discount)
+
+        if voucher_code.strip():
+            if discount > 0:
+                st.success(voucher_message)
+            else:
+                st.warning(voucher_message)
+
+        st.markdown(
+            f"""
+            <div class="total-card">
+                <div>TỔNG THANH TOÁN</div>
+                <div class="total-number">{money(total)}</div>
+                <hr>
+                <div>Giảm giá: -{money(discount)}</div>
+                <div>Điểm dự kiến: {total // 10000} điểm</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        payment_method = st.selectbox(
+            "Phương thức thanh toán",
+            [
+                "Tiền mặt",
+                "Chuyển khoản",
+                "Thẻ ngân hàng",
+                "Ví điện tử"
+            ]
+        )
+
+        confirm_payment = st.button(
+            "✅ XÁC NHẬN THANH TOÁN & XUẤT HÓA ĐƠN",
+            type="primary",
+            use_container_width=True
+        )
+
+        if confirm_payment:
+            if not customer_name.strip():
+                st.error("Vui lòng nhập tên khách hàng.")
+
+            elif not order_items:
+                st.error("Vui lòng chọn ít nhất một món.")
+
+            elif customer_phone.strip() and not customer_phone.strip().isdigit():
+                st.error("Số điện thoại chỉ nên gồm các chữ số.")
+
+            else:
+                now = datetime.now().strftime(
+                    "%d/%m/%Y %H:%M:%S"
+                )
+
+                order_code = generate_order_code()
+                points_earned = total // 10000
+                phone = customer_phone.strip()
+                name = customer_name.strip()
+
+                voucher_saved = (
+                    voucher_code.strip().upper()
+                    if discount > 0 else ""
+                )
+
+                try:
+                    with get_connection() as conn:
+                        cur = conn.cursor()
+
+                        cur.execute("""
+                            INSERT INTO orders(
+                                order_code, customer_name,
+                                customer_phone, table_number,
+                                created_at, subtotal, discount,
+                                total, points_earned, voucher,
+                                payment_method, status
+                            )
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            order_code,
+                            name,
+                            phone,
+                            table_number.strip(),
+                            datetime.now().strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                            subtotal,
+                            discount,
+                            total,
+                            points_earned,
+                            voucher_saved,
+                            payment_method,
+                            "Đã thanh toán"
+                        ))
+
+                        order_id = cur.lastrowid
+
+                        for item in order_items:
+                            cur.execute("""
+                                INSERT INTO order_items(
+                                    order_id, item_name, category,
+                                    price, quantity, line_total
+                                )
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            """, (
+                                order_id,
+                                item["name"],
+                                item["category"],
+                                item["price"],
+                                item["quantity"],
+                                item["line_total"]
+                            ))
+
+                        # Lưu khách hàng và cộng điểm
+                        if phone:
+                            cur.execute("""
+                                INSERT INTO customers(
+                                    phone, name, points,
+                                    total_spent, visits
+                                )
+                                VALUES (?, ?, ?, ?, 1)
+                                ON CONFLICT(phone) DO UPDATE SET
+                                    name = excluded.name,
+                                    points = customers.points
+                                        + excluded.points,
+                                    total_spent =
+                                        customers.total_spent
+                                        + excluded.total_spent,
+                                    visits = customers.visits + 1
+                            """, (
+                                phone,
+                                name,
+                                points_earned,
+                                total
+                            ))
+
+                        conn.commit()
+
+                    invoice_order = {
+                        "order_code": order_code,
+                        "customer_name": name,
+                        "customer_phone": phone or "Không cung cấp",
+                        "table_number": table_number.strip() or "Mang đi",
+                        "created_at": now,
+                        "subtotal": subtotal,
+                        "discount": discount,
+                        "total": total,
+                        "points_earned": points_earned,
+                        "payment_method": payment_method
+                    }
+
+                    invoice_html = build_invoice_html(
+                        invoice_order, order_items
+                    )
+
+                    st.session_state.last_invoice = {
+                        "order": invoice_order,
+                        "items": order_items,
+                        "html": invoice_html
+                    }
+
+                    st.session_state.cart = {}
+                    st.session_state["selected_items"] = []
+
+                    st.success(
+                        f"Thanh toán thành công! "
+                        f"Mã hóa đơn: {order_code}"
+                    )
+
+                    st.rerun()
+
+                except sqlite3.Error as e:
+                    st.error(f"Lỗi lưu database: {e}")
+
+    # Hiển thị hóa đơn gần nhất sau khi thanh toán
+    if st.session_state.last_invoice:
+        invoice = st.session_state.last_invoice
+        order = invoice["order"]
+
+        st.divider()
+        st.markdown("## 🧾 HÓA ĐƠN VỪA THANH TOÁN")
+
+        a, b, c = st.columns(3)
+
+        a.metric("Mã hóa đơn", order["order_code"])
+        b.metric("Tổng thanh toán", money(order["total"]))
+        c.metric("Điểm tích lũy", order["points_earned"])
+
+        st.write("Khách hàng:", order["customer_name"])
+        st.write("Số điện thoại:", order["customer_phone"])
+        st.write("Số bàn:", order["table_number"])
+
+        st.download_button(
+            "📥 TẢI FILE HÓA ĐƠN HTML",
+            data=invoice["html"].encode("utf-8"),
+            file_name=f"hoa_don_{order['order_code']}.html",
+            mime="text/html",
+            use_container_width=True
+        )
+
+        with st.expander("👁️ Xem nội dung hóa đơn"):
+            st.dataframe(
+                pd.DataFrame(invoice["items"]),
+                use_container_width=True,
+                hide_index=True
+            )
+
+        st.caption(
+            "Mở file HTML vừa tải bằng trình duyệt, "
+            "bấm 'In hóa đơn / Lưu PDF' để in hoặc lưu PDF."
+        )
 
 # =========================================================
-# 17. HÓA ĐƠN
+# 9. QUẢN LÝ MENU
+# =========================================================
+
+elif page == "🍱 Quản lý thực đơn":
+
+    st.markdown(
+        '<div class="section-title">🍱 QUẢN LÝ THỰC ĐƠN</div>',
+        unsafe_allow_html=True
+    )
+
+    menu_df = get_menu(active_only=False)
+
+    st.dataframe(
+        menu_df.rename(columns={
+            "id": "Mã",
+            "name": "Tên món",
+            "category": "Danh mục",
+            "price": "Giá",
+            "bestseller": "Best seller",
+            "active": "Đang bán"
+        }),
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.divider()
+    st.markdown("### ➕ Thêm món mới")
+
+    with st.form("add_menu_form"):
+        new_name = st.text_input("Tên món")
+        new_category = st.selectbox(
+            "Danh mục",
+            ["Sushi", "Sashimi", "Món nóng", "Combo", "Thức uống"]
+        )
+        new_price = st.number_input(
+            "Giá bán (VNĐ)",
+            min_value=1000,
+            max_value=100000000,
+            value=30000,
+            step=1000
+        )
+        new_best = st.checkbox("Đánh dấu best seller")
+
+        submitted = st.form_submit_button("Thêm món")
+
+        if submitted:
+            if not new_name.strip():
+                st.error("Vui lòng nhập tên món.")
+            else:
+                try:
+                    with get_connection() as conn:
+                        conn.execute("""
+                            INSERT INTO menu(
+                                name, category, price,
+                                bestseller, active
+                            )
+                            VALUES (?, ?, ?, ?, 1)
+                        """, (
+                            new_name.strip(),
+                            new_category,
+                            int(new_price),
+                            int(new_best)
+                        ))
+                        conn.commit()
+
+                    st.success("Đã thêm món mới!")
+                    st.rerun()
+
+                except sqlite3.IntegrityError:
+                    st.error("Tên món này đã tồn tại.")
+
+    st.divider()
+    st.markdown("### ✏️ Cập nhật giá / trạng thái món")
+
+    active_df = get_menu(active_only=False)
+
+    if not active_df.empty:
+        edit_name = st.selectbox(
+            "Chọn món cần chỉnh sửa",
+            active_df["name"].tolist()
+        )
+
+        edit_row = active_df[
+            active_df["name"] == edit_name
+        ].iloc[0]
+
+        edit_price = st.number_input(
+            "Giá mới (VNĐ)",
+            min_value=1000,
+            max_value=100000000,
+            value=int(edit_row["price"]),
+            step=1000
+        )
+
+        edit_active = st.checkbox(
+            "Đang kinh doanh",
+            value=bool(edit_row["active"])
+        )
+
+        if st.button("💾 Lưu thay đổi"):
+            with get_connection() as conn:
+                conn.execute("""
+                    UPDATE menu
+                    SET price = ?, active = ?
+                    WHERE name = ?
+                """, (
+                    int(edit_price),
+                    int(edit_active),
+                    edit_name
+                ))
+                conn.commit()
+
+            st.success("Đã cập nhật thực đơn.")
+            st.rerun()
+
+# =========================================================
+# 10. BÁO CÁO DOANH THU
+# =========================================================
+
+elif page == "📊 Báo cáo doanh thu":
+
+    st.markdown(
+        '<div class="section-title">📊 BÁO CÁO KINH DOANH</div>',
+        unsafe_allow_html=True
+    )
+
+    today_data, all_data = get_sales_summary()
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Đơn hôm nay", f"{today_data[0]:,}")
+    col2.metric("Doanh thu hôm nay", money(today_data[1]))
+    col3.metric("Tổng đơn", f"{all_data[0]:,}")
+    col4.metric("Tổng doanh thu", money(all_data[1]))
+
+    st.divider()
+
+    with get_connection() as conn:
+        daily = pd.read_sql_query("""
+            SELECT substr(created_at, 1, 10) AS ngay,
+                   COUNT(*) AS so_don,
+                   SUM(total) AS doanh_thu
+            FROM orders
+            WHERE status = 'Đã thanh toán'
+            GROUP BY substr(created_at, 1, 10)
+            ORDER BY ngay
+        """, conn)
+
+        best_items = pd.read_sql_query("""
+            SELECT item_name AS ten_mon,
+                   SUM(quantity) AS so_luong,
+                   SUM(line_total) AS doanh_thu
+            FROM order_items
+            JOIN orders ON order_items.order_id = orders.id
+            WHERE orders.status = 'Đã thanh toán'
+            GROUP BY item_name
+            ORDER BY so_luong DESC
+            LIMIT 10
+        """, conn)
+
+    st.markdown("### 📈 Doanh thu theo ngày")
+
+    if not daily.empty:
+        chart_df = daily.set_index("ngay")
+        st.bar_chart(chart_df["doanh_thu"])
+        st.dataframe(daily, use_container_width=True, hide_index=True)
+    else:
+        st.info("Chưa có dữ liệu doanh thu.")
+
+    st.markdown("### 🏆 Top 10 món được gọi nhiều nhất")
+
+    if not best_items.empty:
+        best_items["doanh_thu"] = best_items["doanh_thu"].apply(money)
+        st.dataframe(
+            best_items,
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.info("Chưa có dữ liệu món bán.")
+
+# =========================================================
+# 11. LỊCH SỬ HÓA ĐƠN
+# =========================================================
+
+elif page == "🗂️ Lịch sử hóa đơn":
+
+    st.markdown(
+        '<div class="section-title">🗂️ LỊCH SỬ HÓA ĐƠN</div>',
+        unsafe_allow_html=True
+    )
+
+    search_term = st.text_input(
+        "🔎 Tìm theo mã hóa đơn, tên khách hoặc số điện thoại"
+    )
+
+    with get_connection() as conn:
+        orders_df = pd.read_sql_query("""
+            SELECT id, order_code, customer_name,
+                   customer_phone, table_number, created_at,
+                   subtotal, discount, total,
+                   points_earned, payment_method, status
+            FROM orders
+            ORDER BY id DESC
+        """, conn)
+
+    if search_term.strip():
+        term = search_term.strip().lower()
+
+        mask = (
+            orders_df["order_code"].astype(str).str.lower().str.contains(
+                term, na=False
+            )
+            | orders_df["customer_name"].astype(str).str.lower().str.contains(
+                term, na=False
+            )
+            | orders_df["customer_phone"].astype(str).str.lower().str.contains(
+                term, na=False
+            )
+        )
+
+        orders_df = orders_df[mask]
+
+    if not orders_df.empty:
+        st.dataframe(
+            orders_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        selected_order_code = st.selectbox(
+            "Chọn hóa đơn để xem chi tiết",
+            orders_df["order_code"].tolist()
+        )
+
+        if st.button("👁️ Xem chi tiết hóa đơn"):
+            with get_connection() as conn:
+                order_row = conn.execute("""
+                    SELECT id, order_code, customer_name,
+                           customer_phone, table_number, created_at,
+                           subtotal, discount, total,
+                           points_earned, payment_method
+                    FROM orders WHERE order_code = ?
+                """, (selected_order_code,)).fetchone()
+
+                item_rows = conn.execute("""
+                    SELECT item_name, category, price,
+                           quantity, line_total
+                    FROM order_items
+                    WHERE order_id = ?
+                """, (order_row[0],)).fetchall()
+
+            if order_row:
+                st.markdown(f"### 🧾 Hóa đơn {order_row[1]}")
+                st.write("Khách hàng:", order_row[2])
+                st.write("Số điện thoại:", order_row[3])
+                st.write("Số bàn:", order_row[4])
+                st.write("Thời gian:", order_row[5])
+
+                detail_items = [
+                    {
+                        "name": r[0],
+                        "category": r[1],
+                        "price": r[2],
+                        "quantity": r[3],
+                        "line_total": r[4]
+                    }
+                    for r in item_rows
+                ]
+
+                st.dataframe(
+                    pd.DataFrame(detail_items),
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                st.markdown(
+                    f"**Tổng thanh toán: {money(order_row[8])}**"
+                )
+
+                invoice_order = {
+                    "order_code": order_row[1],
+                    "customer_name": order_row[2],
+                    "customer_phone": order_row[3],
+                    "table_number": order_row[4],
+                    "created_at": order_row[5],
+                    "subtotal": order_row[6],
+                    "discount": order_row[7],
+                    "total": order_row[8],
+                    "points_earned": order_row[9],
+                    "payment_method": order_row[10]
+                }
+
+                invoice_html = build_invoice_html(
+                    invoice_order, detail_items
+                )
+
+                st.download_button(
+                    "📥 Tải lại hóa đơn HTML",
+                    data=invoice_html.encode("utf-8"),
+                    file_name=f"hoa_don_{order_row[1]}.html",
+                    mime="text/html"
+                )
+
+        csv_data = orders_df.to_csv(
+            index=False
+        ).encode("utf-8-sig")
+
+        st.download_button(
+            "📥 Xuất danh sách hóa đơn CSV",
+            data=csv_data,
+            file_name="lich_su_hoa_don_n2_sushi.csv",
+            mime="text/csv"
+        )
+
+    else:
+        st.info("Chưa có hóa đơn phù hợp.")
+
+# =========================================================
+# 12. CHATBOT TƯ VẤN
+# =========================================================
+
+elif page == "💬 Chatbot tư vấn":
+
+    st.markdown(
+        '<div class="section-title">💬 TRỢ LÝ N2 SUSHI</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="chat-panel">
+        <h3>🍣 N2 Sushi Assistant</h3>
+        <p style="color:#c7b9ab">
+            Trợ lý tư vấn menu · Giờ mở cửa · Địa chỉ · Voucher
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    def chatbot_reply(question):
+        q = question.lower().strip()
+        menu = get_menu()
+
+        if any(x in q for x in [
+            "xin chào", "hello", "hi", "chào"
+        ]):
+            return (
+                "Xin chào bạn! 🍣 Chào mừng đến với N2 Sushi. "
+                "Mình có thể tư vấn món ăn, combo, giá cả, "
+                "giờ mở cửa và chương trình tích điểm nhé!"
+            )
+
+        if any(x in q for x in [
+            "giờ", "mở cửa", "đóng cửa", "mấy giờ"
+        ]):
+            return (
+                f"🕒 N2 Sushi mở cửa: {SHOP_HOURS}. "
+                "Nếu có lịch nghỉ lễ đặc biệt, bạn nên xác nhận "
+                "lại với cửa hàng trước khi ghé nhé."
+            )
+
+        if any(x in q for x in [
+            "địa chỉ", "ở đâu", "đường nào", "chỗ nào"
+        ]):
+            return (
+                f"📍 Địa chỉ N2 Sushi: {SHOP_ADDRESS}. "
+                f"Bạn có thể liên hệ {SHOP_PHONE} "
+                "để hỏi đường đến quán."
+            )
+
+        if any(x in q for x in [
+            "số điện thoại", "liên hệ", "hotline", "gọi"
+        ]):
+            return f"☎️ Số điện thoại liên hệ N2 Sushi: {SHOP_PHONE}."
+
+        if any(x in q for x in [
+            "best seller", "bán chạy", "nổi tiếng",
+            "ngon nhất", "món nào ngon", "nên ăn gì"
+        ]):
+            best = menu[menu["bestseller"] == 1]
+
+            if best.empty:
+                return "Hiện chưa có dữ liệu món best seller."
+
+            lines = []
+            for _, r in best.head(8).iterrows():
+                lines.append(
+                    f"• {r['name']}: {money(r['price'])}"
+                )
+
+            return (
+                "⭐ Những món được quán đánh dấu best seller "
+                "trong menu hiện tại:\n" + "\n".join(lines)
+            )
+
+        if any(x in q for x in [
+            "combo", "đi nhóm", "đi gia đình", "đi hai người"
+        ]):
+            combos = menu[
+                (menu["category"] == "Combo")
+                & (menu["active"] == 1)
+            ]
+
+            lines = [
+                f"• {r['name']}: {money(r['price'])}"
+                for _, r in combos.iterrows()
+            ]
+
+            return (
+                "🎎 Bạn có thể tham khảo các combo sau:\n"
+                + "\n".join(lines)
+                + "\nGiá và thành phần combo hiện là dữ liệu mẫu; "
+                "hãy kiểm tra lại trước khi tư vấn khách."
+            )
+
+        if any(x in q for x in [
+            "voucher", "giảm giá", "khuyến mãi", "mã giảm"
+        ]):
+            return (
+                "🎟️ Các voucher đang được cấu hình trong app:\n"
+                "• N2WELCOME: giảm 10%, tối đa 50.000đ.\n"
+                "• SUSHI20: giảm 20.000đ cho đơn từ 200.000đ.\n"
+                "• N2VIP: giảm 15%, tối đa 100.000đ cho đơn từ 500.000đ.\n"
+                "Nhập mã tại mục thanh toán để kiểm tra điều kiện."
+            )
+
+        if any(x in q for x in [
+            "tích điểm", "điểm", "thành viên", "thân thiết"
+        ]):
+            return (
+                "🌟 Chính sách tích điểm hiện tại của app mẫu: "
+                "mỗi 10.000đ thanh toán được cộng 1 điểm. "
+                "Điểm được lưu theo số điện thoại khi thanh toán."
+            )
+
+        if any(x in q for x in [
+            "menu", "thực đơn", "có món gì", "giá món"
+        ]):
+            lines = []
+
+            for category in [
+                "Sushi", "Sashimi", "Món nóng",
+                "Combo", "Thức uống"
+            ]:
+                subset = menu[
+                    (menu["category"] == category)
+                    & (menu["active"] == 1)
+                ]
+
+                if not subset.empty:
+                    lines.append(f"\n{category}:")
+                    for _, r in subset.head(5).iterrows():
+                        lines.append(
+                            f"• {r['name']}: {money(r['price'])}"
+                        )
+
+            return "🍱 Menu N2 Sushi:\n" + "\n".join(lines)
+
+        if any(x in q for x in [
+            "sushi", "sashimi", "ramen", "nước",
+            "uống", "tempura", "cá hồi", "cơm bò"
+        ]):
+            matched = menu[
+                menu["name"].str.lower().str.contains(
+                    q.replace("giá", "").strip(),
+                    regex=False,
+                    na=False
+                )
+            ]
+
+            if not matched.empty:
+                lines = [
+                    f"• {r['name']}: {money(r['price'])}"
+                    for _, r in matched.head(10).iterrows()
+                ]
+
+                return "🍣 Món phù hợp với câu hỏi của bạn:\n" + "\n".join(lines)
+
+            category_map = {
+                "sushi": "Sushi",
+                "sashimi": "Sashimi",
+                "ramen": "Món nóng",
+                "tempura": "Món nóng",
+                "nước": "Thức uống",
+                "uống": "Thức uống"
+            }
+
+            for keyword, category in category_map.items():
+                if keyword in q:
+                    subset = menu[
+                        (menu["category"] == category)
+                        & (menu["active"] == 1)
+                    ]
+
+                    return (
+                        f"🍱 Một số lựa chọn thuộc nhóm {category}:\n"
+                        + "\n".join([
+                            f"• {r['name']}: {money(r['price'])}"
+                            for _, r in subset.head(8).iterrows()
+                        ])
+                    )
+
+        return (
+            "Mình chưa hiểu rõ câu hỏi này. 😊 Bạn thử hỏi:\n"
+            "• N2 Sushi mở cửa lúc mấy giờ?\n"
+            "• Địa chỉ quán ở đâu?\n"
+            "• Món nào best seller?\n"
+            "• Có combo nào cho 2 người?\n"
+            "• Voucher nào đang dùng được?\n"
+            "• Giá sushi cá hồi bao nhiêu?\n\n"
+            "Mình hiện trả lời theo dữ liệu trong database của quán."
+        )
+
+    # Hiển thị lịch sử hội thoại
+    for msg in st.session_state.chat_history:
+        if msg["role"] == "user":
+            st.markdown(
+                f'<div class="chat-user">👤 '
+                f'{html.escape(msg["content"]).replace(chr(10), "<br>")}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f'<div class="chat-bubble">🍣 '
+                f'{html.escape(msg["content"]).replace(chr(10), "<br>")}'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+
+    # Các câu hỏi gợi ý nhanh
+    st.markdown("### ⚡ Câu hỏi nhanh")
+
+    quick_cols = st.columns(3)
+
+    quick_questions = [
+        "Giờ mở cửa",
+        "Món best seller",
+        "Voucher",
+        "Địa chỉ quán",
+        "Combo cho 2 người",
+        "Menu"
+    ]
+
+    for i, question in enumerate(quick_questions):
+        with quick_cols[i % 3]:
+            if st.button(
+                question,
+                key=f"quick_{i}",
+                use_container_width=True
+            ):
+                st.session_state.chat_history.append({
+                    "role": "user",
+                    "content": question
+                })
+
+                answer = chatbot_reply(question)
+
+                st.session_state.chat_history.append({
+                    "role": "assistant",
+                    "content": answer
+                })
+
+                st.rerun()
+
+    with st.form("chat_form", clear_on_submit=True):
+        user_question = st.text_input(
+            "Nhập câu hỏi",
+            placeholder="VD: Món nào ngon nhất ở N2 Sushi?"
+        )
+
+        send = st.form_submit_button(
+            "Gửi tin nhắn ✉️",
+            use_container_width=True
+        )
+
+        if send and user_question.strip():
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": user_question.strip()
+            })
+
+            answer = chatbot_reply(user_question)
+
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": answer
+            })
+
+            st.rerun()
+
+    if st.button("🗑️ Xóa hội thoại"):
+        st.session_state.chat_history = []
+        st.rerun()
+
+# =========================================================
+# 13. FOOTER
 # =========================================================
 
 st.divider()
 
-html_markdown(
-    '<div class="section-title">🧾 Hóa đơn</div>',
-    unsafe_allow_html=True,
-)
-
-invoice = st.session_state.invoice
-
-if invoice:
-    html_markdown(
-        f"""
-<div class="invoice-box">
-    <div class="invoice-title">🍣 N2 Sushi</div>
-    <div class="invoice-number">
-        HÓA ĐƠN: {html.escape(invoice['number'])}
+st.markdown(
+    """
+    <div style="text-align:center; padding:12px; color:#887b6c">
+        <b style="color:#7d1f2a">🍣 N2 SUSHI</b><br>
+        Japanese Dining · Fresh Taste · Premium Experience<br>
+        <small>Hệ thống quản lý đơn hàng & tích điểm khách hàng</small>
     </div>
-    <div class="invoice-row">
-        <span>Thời gian</span>
-        <span>{invoice['time'].strftime('%d/%m/%Y %H:%M:%S')}</span>
-    </div>
-    <div class="invoice-row">
-        <span>Số bàn</span>
-        <span>{html.escape(invoice['table'])}</span>
-    </div>
-    <div class="invoice-row">
-        <span>Khách hàng</span>
-        <span>{html.escape(invoice['customer'])}</span>
-    </div>
-    <div class="invoice-row">
-        <span>Số điện thoại</span>
-        <span>{html.escape(invoice['phone'] or 'Không cung cấp')}</span>
-    </div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("#### Chi tiết món")
-
-    for item in invoice["items"]:
-        st.write(
-            f"**{item['name']}** × {item['quantity']} — "
-            f"{money(item['total'])}"
-        )
-
-        if item["note"]:
-            st.caption(f"Ghi chú: {item['note']}")
-
-    st.markdown("---")
-    st.write(f"**Tạm tính:** {money(invoice['subtotal'])}")
-    st.write(f"**Giảm giá:** {money(invoice['discount'])}")
-    st.markdown(f"## Tổng cộng: {money(invoice['total'])}")
-    st.success(f"🎁 Điểm tích lũy: +{invoice['points']} điểm")
-
-    invoice_text = [
-        "N2 SUSHI",
-        f"Hóa đơn: {invoice['number']}",
-        f"Thời gian: {invoice['time'].strftime('%d/%m/%Y %H:%M:%S')}",
-        f"Số bàn: {invoice['table']}",
-        f"Khách hàng: {invoice['customer']}",
-        f"Số điện thoại: {invoice['phone'] or 'Không cung cấp'}",
-        "-" * 35,
-    ]
-
-    for item in invoice["items"]:
-        invoice_text.append(
-            f"{item['name']} x {item['quantity']} = "
-            f"{money(item['total'])}"
-        )
-
-        if item["note"]:
-            invoice_text.append(f"  Ghi chú: {item['note']}")
-
-    invoice_text.extend([
-        "-" * 35,
-        f"Tạm tính: {money(invoice['subtotal'])}",
-        f"Giảm giá: {money(invoice['discount'])}",
-        f"Tổng thanh toán: {money(invoice['total'])}",
-        f"Điểm tích lũy: {invoice['points']}",
-        "",
-        "Cảm ơn quý khách đã dùng bữa tại N2 Sushi!",
-    ])
-
-    st.download_button(
-        "⬇️ Tải hóa đơn dạng TXT",
-        data="\n".join(invoice_text),
-        file_name=f"{invoice['number']}.txt",
-        mime="text/plain",
-        use_container_width=True,
-    )
-
-else:
-    st.info("Chưa có hóa đơn. Hãy chọn món và xác nhận đơn hàng.")
-
-
-# =========================================================
-# 18. FOOTER
-# =========================================================
-
-html_markdown(
-    f"""
-<div class="footer">
-    <div style="font-size:22px;font-weight:900;color:#793d49;">
-        🍣 N2 Sushi
-    </div>
-    <div style="margin-top:8px;">
-        {html.escape(RESTAURANT_ADDRESS)}
-    </div>
-    <div style="margin-top:5px;">
-        Hotline: {html.escape(RESTAURANT_PHONE)}
-    </div>
-    <div style="margin-top:12px;">
-        Cảm ơn bạn đã lựa chọn N2 Sushi ❤️
-    </div>
-</div>
-""",
-    unsafe_allow_html=True,
+    """,
+    unsafe_allow_html=True
 )
