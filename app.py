@@ -1335,7 +1335,7 @@ with cart_column:
 
     st.metric("Giảm giá", money(discount_amount))
     st.metric("Tổng thanh toán", money(total_amount))
-with info1:
+    with info1:
 html_markdown(
         f"""
 <div class="info-box">
